@@ -47,29 +47,6 @@ function run_all_tests()
         @test gi == 0.5
     end
 
-    @testset "getinverse tests" begin
-        cs = ColorScheme(range(RGB(0, 0, 0), stop=RGB(1, 1, 1), length=5))
-        @test getinverse(cs, cs[3]) == 0.5
-
-        # Note that getinverse() takes the first closest match.
-        cs = ColorScheme([RGB(0,0,0), RGB(1,1,1),
-              RGB(0,0,0),
-              RGB(0,0,0), RGB(1,1,1)]);
-        @test getinverse(cs, cs[3]) == 0
-
-        # Note that getinverse() takes the left index when two are identical.
-        cs = ColorScheme([RGB(1,1,1), RGB(0,0,0), RGB(0,0,0), RGB(0,1,1), RGB(1,1,0)]);
-        @test getinverse(cs, cs[2]) == 0.25
-        cs = ColorScheme([RGB(0,0,0), RGB(0,0,0)]);
-        @test getinverse(cs, cs[1]) == 0
-
-        cs = ColorScheme([RGB(0,0,0)]);
-        @test_throws MethodError getinverse(cs, cs[1])
-        # (The above line throws for the same reason the below line does.
-        #  If this behavior ever changes, so should `getinverse`.)
-        @test_throws InexactError get(cs, 1.0, (1, 1))
-    end
-
     @testset "convert_to_scheme tests" begin
         # Add color to a grayscale image.
         # now using ColorScheme objects and .colors accessors
