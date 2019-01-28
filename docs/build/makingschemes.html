@@ -9,7 +9,7 @@
             :blue =&gt;  ((0.0,  0.0,  0.0),
                        (0.5,  0.0,  0.0),
                        (1.0,  1.0,  1.0)))</code></pre><p>The first number in each tuple for each color increases from 0 to 1, the second and third determine the color values. (TODO - how exactly?)</p><p>To create a new ColorScheme from a suitable dictionary, call <code>make_colorscheme()</code>.</p><pre><code class="language-none">using Colors, ColorSchemes
-scheme = make_colorscheme(dict)</code></pre><p>By plotting the color components separately it&#39;s possible to see how the curves change. This diagram both the defined color levels and a continuously-sampled image:</p><div><pre><code class="language-julia">cdict = Dict(:red  =&gt; ((0.0,  0.0,  0.0),
+scheme = make_colorscheme(dict)</code></pre><p>By plotting the color components separately it&#39;s possible to see how the curves change. This diagram shows both the defined color levels and a continuously-sampled image below it:</p><div><pre><code class="language-julia">cdict = Dict(:red  =&gt; ((0.0,  0.0,  0.0),
                        (0.5,  1.0,  1.0),
                        (1.0,  1.0,  1.0)),
             :green =&gt; ((0.0,  0.0,  0.0),
@@ -18,7 +18,7 @@ scheme = make_colorscheme(dict)</code></pre><p>By plotting the color components 
                        (1.0,  1.0,  1.0)),
             :blue =&gt;  ((0.0,  0.0,  0.0),
                        (0.5,  0.0,  0.0),
-scheme = make_colorscheme(cdict)</code></pre></div><p><img src="assets/figures/curves.svg" alt="&quot;showing linear segmented colorscheme&quot;"/></p><p>If you want to save an image of this, use <code>colorscheme_to_image()</code>:</p><pre><code class="language-none">using ColorSchemes, ColorSchemeTools, FileIO
+scheme = make_colorscheme(cdict)</code></pre></div><p><img src="assets/figures/curves.svg" alt="&quot;showing linear segmented colorscheme&quot;"/></p><p>If you want to save an image of a ColorScheme, use <code>colorscheme_to_image()</code>:</p><pre><code class="language-none">using ColorSchemes, ColorSchemeTools, FileIO
 img = colorscheme_to_image(ColorScheme(scheme), 450, 60)
 save(&quot;/tmp/linseg.png&quot;, img)</code></pre><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="ColorSchemeTools.get_linear_segment_color" href="#ColorSchemeTools.get_linear_segment_color"><code>ColorSchemeTools.get_linear_segment_color</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-none">get_linear_segment_color(dict, n)</code></pre><p>Get the RGB color for value <code>n</code> from a dictionary of linear color segments.</p><p>A dictionary where red increases from 0 to 1 over the bottom half, green does the same over the middle half, and blue over the top half, looks like this:</p><pre><code class="language-none">cdict = Dict(:red  =&gt; ((0.0,  0.0,  0.0),
                        (0.5,  1.0,  1.0),
@@ -31,14 +31,14 @@ save(&quot;/tmp/linseg.png&quot;, img)</code></pre><section class="docstring"><d
                        (0.5,  0.0,  0.0),
                        (1.0,  1.0,  1.0)))</code></pre><p>The value of RGB component at every value of <code>n</code> is defined by a set of tuples. In each tuple, the first number is <code>x</code>. Colors are linearly interpolated in bands between consecutive values of <code>x</code>; if the first tuple is given by <code>(Z, A, B)</code> and the second tuple by <code>(X, C, D)</code>, the color of a point <code>n</code> between Z and X will be given by <code>(n - Z) / (X - Z) * (C - B) + B</code>.</p><p>For example, given an entry like this:</p><pre><code class="language-none">:red  =&gt; ((0.0, 0.0, 0.0),
           (0.5, 1.0, 1.0),
-          (1.0, 1.0, 1.0))</code></pre><p>and if <code>n</code> = 0.75, we return 1.0; 0.75 is between the second and third segments, but we&#39;d already reached 1.0 (segment 2) when <code>n</code> was 0.5.</p></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/3602d8c136d59a20643b46a0fa4e1118a7a4ac64/src/ColorSchemeTools.jl#L238-L276">source</a></section><h2><a class="nav-anchor" id="Indexed-list-color-schemes-1" href="#Indexed-list-color-schemes-1">Indexed-list color schemes</a></h2><p>An &#39;indexed list&#39; color scheme looks like this:</p><pre><code class="language-none">terrain = (
+          (1.0, 1.0, 1.0))</code></pre><p>and if <code>n</code> = 0.75, we return 1.0; 0.75 is between the second and third segments, but we&#39;d already reached 1.0 (segment 2) when <code>n</code> was 0.5.</p></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/24511284f01c05dee18f343c9052700bb7cff781/src/ColorSchemeTools.jl#L238-L276">source</a></section><h2><a class="nav-anchor" id="Indexed-list-color-schemes-1" href="#Indexed-list-color-schemes-1">Indexed-list color schemes</a></h2><p>The data to define an &#39;indexed list&#39; color scheme looks like this:</p><pre><code class="language-none">terrain = (
            (0.00, (0.2, 0.2,  0.6)),
            (0.15, (0.0, 0.6,  1.0)),
            (0.25, (0.0, 0.8,  0.4)),
            (0.50, (1.0, 1.0,  0.6)),
            (0.75, (0.5, 0.36, 0.33)),
            (1.00, (1.0, 1.0,  1.0))
-          )</code></pre><p>The first element in each is the location between 0 and 1, the second specifies the RGB values at that point.</p><p>The <code>make_colorscheme(indexedlist)</code> function makes a new ColorScheme from such an indexed list.</p><pre><code class="language-none">make_colorscheme(terrain)</code></pre><div><pre><code class="language-julia">terrain_data = (
+          )</code></pre><p>The first item of each element is the location between 0 and 1, the second specifies the RGB values at that point.</p><p>The <code>make_colorscheme(indexedlist)</code> function makes a new ColorScheme from such an indexed list.</p><p>For example:</p><div><pre><code class="language-julia">terrain_data = (
         (0.00, (0.2, 0.2, 0.6)),
         (0.15, (0.0, 0.6, 1.0)),
         (0.25, (0.0, 0.8, 0.4)),
@@ -52,7 +52,7 @@ terrain = make_colorscheme(terrain_data, length = 20)</code></pre></div><p><img 
 ripple13(n) = sin(π * 13n)
 ripple17(n) = sin(π * 17n)
 fscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)</code></pre></div><p><img src="assets/figures/funcscheme5.svg" alt="&quot;functional color schemes&quot;"/></p><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="ColorSchemeTools.make_colorscheme" href="#ColorSchemeTools.make_colorscheme"><code>ColorSchemeTools.make_colorscheme</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-none">make_colorscheme(dict;
-    length=100)</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/3602d8c136d59a20643b46a0fa4e1118a7a4ac64/src/ColorSchemeTools.jl#L298-L301">source</a><div><div><pre><code class="language-none">make_colorscheme(indexedlist, name::Symbol;
+    length=100)</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/24511284f01c05dee18f343c9052700bb7cff781/src/ColorSchemeTools.jl#L298-L301">source</a><div><div><pre><code class="language-none">make_colorscheme(indexedlist, name::Symbol;
     length=100)</code></pre><p>Make a colorscheme using an &#39;indexed list&#39; like this:</p><pre><code class="language-none">gist_rainbow = (
        (0.000, (1.00, 0.00, 0.16)),
        (0.030, (1.00, 0.00, 0.00)),
@@ -64,5 +64,5 @@ fscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)</code></pre><
        (1.000, (1.00, 0.00, 0.75))
 )
 
-make_colorscheme(gist_rainbow)</code></pre><p>The first element of this list of tuples is the point on the color scheme.</p></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/3602d8c136d59a20643b46a0fa4e1118a7a4ac64/src/ColorSchemeTools.jl#L359-L381">source</a><div><div><pre><code class="language-none">make_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;
-        length=100)</code></pre><p>Make a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.</p></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/3602d8c136d59a20643b46a0fa4e1118a7a4ac64/src/ColorSchemeTools.jl#L390-L396">source</a></section><footer><hr/><a class="previous" href="convertingimages.html"><span class="direction">Previous</span><span class="title">Converting image colors</span></a><a class="next" href="output.html"><span class="direction">Next</span><span class="title">Saving colorschemes</span></a></footer></article></body></html>
+make_colorscheme(gist_rainbow)</code></pre><p>The first element of this list of tuples is the point on the color scheme.</p></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/24511284f01c05dee18f343c9052700bb7cff781/src/ColorSchemeTools.jl#L359-L381">source</a><div><div><pre><code class="language-none">make_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;
+        length=100)</code></pre><p>Make a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.</p></div></div><a class="source-link" target="_blank" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/24511284f01c05dee18f343c9052700bb7cff781/src/ColorSchemeTools.jl#L390-L396">source</a></section><footer><hr/><a class="previous" href="convertingimages.html"><span class="direction">Previous</span><span class="title">Converting image colors</span></a><a class="next" href="output.html"><span class="direction">Next</span><span class="title">Saving colorschemes</span></a></footer></article></body></html>

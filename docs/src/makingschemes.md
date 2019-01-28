@@ -19,11 +19,13 @@
         fontsize(7)
         sethue("grey80")
         box(bbox, :stroke)
+        # horizontal lines
         div10 = boxheight(bbox)/10
         for (ylabel, yy) in enumerate(boxtopcenter(bbox).y:div10:boxbottomcenter(bbox).y)
             rule(Point(0, yy), boundingbox=bbox)
             text(string((11 - ylabel)/10), Point(boxbottomleft(bbox).x - 10, yy), halign=:right, valign=:middle)
         end
+        # vertical lines
         div10 = boxwidth(bbox)/10
         for (xlabel, xx) in enumerate(boxtopleft(bbox).x:div10:boxtopright(bbox).x)
             rule(Point(xx, 0), π/2, boundingbox=bbox)
@@ -59,8 +61,8 @@
     # second tile, swatches
     @layer begin
         translate(table[2])
-        # draw in a single pane, to get margins etc.
-        panes = Tiler(boxwidth(bbox), table.rowheights[2], 1, 1, margin=5)
+        # draw in a single pane
+        panes = Tiler(boxwidth(bbox), table.rowheights[2], 1, 1)
         panewidth = panes.tilewidth
         paneheight = panes.tileheight
 
@@ -68,12 +70,11 @@
         swatchwidth = panewidth/l
         for (i, p) in enumerate(cs.colors)
             sethue(p)
-            box(Point(O.x - panewidth/2 + (i * swatchwidth) - swatchwidth/2, O.y #- (paneheight/3)
-            ),
-                swatchwidth, table.rowheights[2]/2, :fillstroke)
+            box(Point(O.x - panewidth/2 + ((i - 1) * swatchwidth) - swatchwidth/2, O.y), swatchwidth, table.rowheights[2]/2, :fillstroke)
         end
     end
-    # third tile
+
+    # third tile, continuous sampling
     @layer begin
         translate(table[3])
         # draw blend
@@ -127,7 +128,7 @@ using Colors, ColorSchemes
 scheme = make_colorscheme(dict)
 ```
 
-By plotting the color components separately it's possible to see how the curves change. This diagram both the defined color levels and a continuously-sampled image:
+By plotting the color components separately it's possible to see how the curves change. This diagram shows both the defined color levels and a continuously-sampled image below it:
 
 ```@example drawscheme
 cdict = Dict(:red  => ((0.0,  0.0,  0.0),
@@ -147,7 +148,7 @@ nothing # hide
 
 !["showing linear segmented colorscheme"](assets/figures/curves.svg)
 
-If you want to save an image of this, use `colorscheme_to_image()`:
+If you want to save an image of a ColorScheme, use `colorscheme_to_image()`:
 
 ```
 using ColorSchemes, ColorSchemeTools, FileIO
@@ -161,7 +162,7 @@ get_linear_segment_color
 
 ## Indexed-list color schemes
 
-An 'indexed list' color scheme looks like this:
+The data to define an 'indexed list' color scheme looks like this:
 
 ```
 terrain = (
@@ -174,13 +175,11 @@ terrain = (
           )
 ```
 
-The first element in each is the location between 0 and 1, the second specifies the RGB values at that point.
+The first item of each element is the location between 0 and 1, the second specifies the RGB values at that point.
 
 The `make_colorscheme(indexedlist)` function makes a new ColorScheme from such an indexed list.
 
-```
-make_colorscheme(terrain)
-```
+For example:
 
 ```@example drawscheme
 terrain_data = (

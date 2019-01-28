@@ -8,7 +8,7 @@
 
 This package provides tools for working with colorschemes and colormaps.
 
-For example, you can extract colorschemes from images, and replace an image colorscheme with another.
+For example, you can extract colorschemes from images, and replace an image colorscheme with another. There are also functions for creating color schemes from lists, dictionaries, and functions.
 
 This package relies on:
 
