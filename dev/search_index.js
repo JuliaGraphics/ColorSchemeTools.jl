@@ -89,22 +89,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "tools/#ColorSchemeTools.get_linear_segment_color",
-    "page": "Tools",
-    "title": "ColorSchemeTools.get_linear_segment_color",
-    "category": "function",
-    "text": "get_linear_segment_color(dict, n)\n\nGet the color for value n from a dictionary of linear color segments.\n\nFor example, suppose you want red to increase from 0 to 1 over the bottom half, green to do the same over the middle half, and blue over the top half. A suitable dictionary would look like this:\n\ncdict = Dict(:red  => ((0.0, 0.0, 0.0),\n                       (0.5, 1.0, 1.0),\n                       (1.0, 1.0, 1.0)),\n            :green => ((0.0, 0.0, 0.0),\n                       (0.25, 0.0, 0.0),\n                       (0.75, 1.0, 1.0),\n                       (1.0,  1.0, 1.0)),\n            :blue =>  ((0.0,  0.0, 0.0),\n                       (0.5,  0.0, 0.0),\n                       (1.0,  1.0, 1.0)))\n\nEach color is defined by a set of tuples. In each tuple, the first number is x. Colors are linearly interpolated in bands between consecutive values of x; if the first tuple is given by (Z A B) and the second tuple by (X, C, D), the color of a point n between Z and X will be given by (n - Z) / (X - Z) * (C - B) + B.\n\nFor example, given an entry like this:\n\n:red  => ((0.0, 0.0, 0.0),\n          (0.5, 1.0, 1.0),\n          (1.0, 1.0, 1.0))\n\nand if n = 0.75, we return 1.0; 0.75 is between the second and third segments, but we\'d already reached 1.0 (segment 2) when n was 0.5.\n\n\n\n\n\n"
-},
-
-{
-    "location": "tools/#Linearly-segmented-colors-1",
-    "page": "Tools",
-    "title": "Linearly-segmented colors",
-    "category": "section",
-    "text": "A linearly-segmented color dictionary looks like this: hsv = Dict(:red =>   ((0., 1., 1.),\n                       (0.158730, 1.000000, 1.000000),\n                       (0.174603, 0.968750, 0.968750),\n                       (0.333333, 0.031250, 0.031250),\n                       (0.349206, 0.000000, 0.000000),\n                       (0.666667, 0.000000, 0.000000),\n                       (0.682540, 0.031250, 0.031250),\n                       (0.841270, 0.968750, 0.968750),\n                       (0.857143, 1.000000, 1.000000),\n                       (1.0, 1.0, 1.0)),\n             :green => ((0., 0., 0.),\n                       (0.158730, 0.937500, 0.937500),\n                       (0.174603, 1.000000, 1.000000),\n                       (0.507937, 1.000000, 1.000000),\n                       (0.666667, 0.062500, 0.062500),\n                       (0.682540, 0.000000, 0.000000),\n                       (1.0, 0., 0.)),\n             :blue =>  ((0., 0., 0.),\n                       (0.333333, 0.000000, 0.000000),\n                       (0.349206, 0.062500, 0.062500),\n                       (0.507937, 1.000000, 1.000000),\n                       (0.841270, 1.000000, 1.000000),\n                       (0.857143, 0.937500, 0.937500),\n                       (1.0, 0.09375, 0.09375)))The first number in each tuple for each color increases from 0 to 1, the second and third determine the color values. To create a new ColorScheme from this, decide on a sampling rate, then call get_linear_segment_color() and keep the sampled values.using Colors, ColorSchemes\n\nscheme = RGB[]\n\nfor i in 0:0.01:1\n    push!(scheme, RGB(get_linear_segment_color(_hsv, i)...))\nend\n\nColorScheme(scheme)Make an image from this scheme:using ColorSchemes, FileIO\nimg = colorscheme_to_image(ColorScheme(scheme), 450, 60)\nsave(\"/tmp/linseg.png\", img)(Image: \"linear segmented colorscheme\")get_linear_segment_color"
-},
-
-{
     "location": "convertingimages/#",
     "page": "Converting image colors",
     "title": "Converting image colors",
@@ -134,6 +118,54 @@ var documenterSearchIndex = {"docs": [
     "title": "Convert image from one scheme to another",
     "category": "section",
     "text": "Using getinverse() it\'s possible to convert an image from one colorscheme to another.convert_to_scheme(cscheme, img) returns a new image in which each pixel from the provided image is mapped to its closest matching color in the provided scheme.using FileIO\n# image created in the ColorSchemes documentation\nimg = load(\"ColorSchemeTools/docs/src/assets/figures/heatmap1.png\")(Image: \"heatmap 1\")Here, the original image is converted to use the GnBu_9 scheme.img1 = save(\"/tmp/t.png\", convert_to_scheme(ColorSchemes.GnBu_9, img))(Image: \"heatmap converted\")convert_to_scheme"
+},
+
+{
+    "location": "makingschemes/#",
+    "page": "Making colorschemes",
+    "title": "Making colorschemes",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "makingschemes/#Making-new-colorschemes-1",
+    "page": "Making colorschemes",
+    "title": "Making new colorschemes",
+    "category": "section",
+    "text": "There are a few functions that can make new ColorSchemes:makelinearsegment_colorscheme\nmakeindexedlist_colorscheme\nmakefunctionalcolorscheme"
+},
+
+{
+    "location": "makingschemes/#ColorSchemeTools.get_linear_segment_color",
+    "page": "Making colorschemes",
+    "title": "ColorSchemeTools.get_linear_segment_color",
+    "category": "function",
+    "text": "get_linear_segment_color(dict, n)\n\nGet the RGB color for value n from a dictionary of linear color segments.\n\nA dictionary where red increases from 0 to 1 over the bottom half, green does the same over the middle half, and blue over the top half, looks like this:\n\ncdict = Dict(:red  => ((0.0,  0.0,  0.0),\n                       (0.5,  1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :green => ((0.0,  0.0,  0.0),\n                       (0.25, 0.0,  0.0),\n                       (0.75, 1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :blue =>  ((0.0,  0.0,  0.0),\n                       (0.5,  0.0,  0.0),\n                       (1.0,  1.0,  1.0)))\n\nThe value of RGB component at every value of n is defined by a set of tuples. In each tuple, the first number is x. Colors are linearly interpolated in bands between consecutive values of x; if the first tuple is given by (Z, A, B) and the second tuple by (X, C, D), the color of a point n between Z and X will be given by (n - Z) / (X - Z) * (C - B) + B.\n\nFor example, given an entry like this:\n\n:red  => ((0.0, 0.0, 0.0),\n          (0.5, 1.0, 1.0),\n          (1.0, 1.0, 1.0))\n\nand if n = 0.75, we return 1.0; 0.75 is between the second and third segments, but we\'d already reached 1.0 (segment 2) when n was 0.5.\n\n\n\n\n\n"
+},
+
+{
+    "location": "makingschemes/#Linearly-segmented-colors-1",
+    "page": "Making colorschemes",
+    "title": "Linearly-segmented colors",
+    "category": "section",
+    "text": "A linearly-segmented color dictionary looks like this:hsv = Dict(:red =>    ((0., 1., 1.),\n                       (0.158730, 1.000000, 1.000000),\n                       (0.174603, 0.968750, 0.968750),\n                       (0.333333, 0.031250, 0.031250),\n                       (0.349206, 0.000000, 0.000000),\n                       (0.666667, 0.000000, 0.000000),\n                       (0.682540, 0.031250, 0.031250),\n                       (0.841270, 0.968750, 0.968750),\n                       (0.857143, 1.000000, 1.000000),\n                       (1.0, 1.0, 1.0)),\n             :green => ((0., 0., 0.),\n                       (0.158730, 0.937500, 0.937500),\n                       (0.174603, 1.000000, 1.000000),\n                       (0.507937, 1.000000, 1.000000),\n                       (0.666667, 0.062500, 0.062500),\n                       (0.682540, 0.000000, 0.000000),\n                       (1.0, 0., 0.)),\n             :blue =>  ((0., 0., 0.),\n                       (0.333333, 0.000000, 0.000000),\n                       (0.349206, 0.062500, 0.062500),\n                       (0.507937, 1.000000, 1.000000),\n                       (0.841270, 1.000000, 1.000000),\n                       (0.857143, 0.937500, 0.937500),\n                       (1.0, 0.09375, 0.09375)))The first number in each tuple for each color increases from 0 to 1, the second and third determine the color values. To create a new ColorScheme from this, decide on a sampling rate, then call get_linear_segment_color() and keep the sampled values.using Colors, ColorSchemes\n\nscheme = RGB[]\n\nfor i in 0:0.01:1\n    push!(scheme, RGB(get_linear_segment_color(_hsv, i)...))\nend\n\nColorScheme(scheme)Make an image from this scheme:using ColorSchemes, FileIO\nimg = colorscheme_to_image(ColorScheme(scheme), 450, 60)\nsave(\"/tmp/linseg.png\", img)(Image: \"linear segmented colorscheme\")get_linear_segment_color"
+},
+
+{
+    "location": "makingschemes/#Indexed-list-color-schemes-1",
+    "page": "Making colorschemes",
+    "title": "Indexed-list color schemes",
+    "category": "section",
+    "text": "An \'indexed list\' color scheme looks like this:gist_rainbow = (\n       (0.000, (1.00, 0.00, 0.16)),\n       (0.030, (1.00, 0.00, 0.00)),\n       (0.215, (1.00, 1.00, 0.00)),\n       (0.400, (0.00, 1.00, 0.00)),\n       (0.586, (0.00, 1.00, 1.00)),\n       (0.770, (0.00, 0.00, 1.00)),\n       (0.954, (1.00, 0.00, 1.00)),\n       (1.000, (1.00, 0.00, 0.75))\n)The first element in each is the point on the color scheme, the second specifies the RGB values at that point.The make_indexed_list_colorscheme(indexedlist) function makes a new ColorScheme from an indexed list.make_indexed_list_colorscheme(gist_rainbow)"
+},
+
+{
+    "location": "makingschemes/#Functional-color-schemes-1",
+    "page": "Making colorschemes",
+    "title": "Functional color schemes",
+    "category": "section",
+    "text": "The colors in a \'functional\' color scheme are produced by three functions that calculate the color values at each point on the scheme.The make_functional_colorscheme() function takes three functions and applies them at each point on the colorscheme.make_functional_colorscheme(sqrt, log, (n) -> n/2)"
 },
 
 {
@@ -181,7 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Saving colorschemes",
     "title": "ColorSchemeTools.colorscheme_to_text",
     "category": "function",
-    "text": "colorscheme_to_text(cscheme::ColorScheme, schemename, filename; comment=\"\")\n\nWrite a colorscheme to a Julia text file.\n\n##Example\n\ncolorscheme_to_text(ColorSchemes.vermeer,\n    \"the_lost_vermeer\",          # name\n    \"/tmp/the_lost_vermeer.jl\",  # file\n    category=\"dutch painters\",   # category\n    notes=\"it\'s not really lost\" # notes\n    )\n\nand read it back in with:\n\ninclude(\"/tmp/the_lost_vermeer.jl\")\n\n\n\n\n\n"
+    "text": "colorscheme_to_text(cscheme::ColorScheme, schemename, filename;\n    category=\"dutch painters\",   # category\n    notes=\"it\'s not really lost\" # notes\n)\n\nWrite a colorscheme to a Julia text file.\n\nExample\n\ncolorscheme_to_text(ColorSchemes.vermeer,\n    \"the_lost_vermeer\",          # name\n    \"/tmp/the_lost_vermeer.jl\",  # file\n    category=\"dutch painters\",   # category\n    notes=\"it\'s not really lost\" # notes\n    )\n\nand read it back in with:\n\ninclude(\"/tmp/the_lost_vermeer.jl\")\n\n\n\n\n\n"
 },
 
 {
