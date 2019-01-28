@@ -1,3 +1,12 @@
+"""
+This package provides some tools for working with ColorSchemes:
+
+    colorscheme_to_image(), colorscheme_to_text(), colorscheme_weighted(),
+    compare_colors(), extract(), extract_weighted_colors(), convert_to_scheme(),
+    image_to_swatch(), sortcolorscheme(), get_linear_segment_color(),
+    make_linear_segment_colorscheme(), make_indexed_list_colorscheme(),
+    get_indexed_list_color(), make_functional_colorscheme()
+"""
 module ColorSchemeTools
 
 using Images, ColorSchemes, Colors, Clustering, FileIO, Dates
@@ -14,7 +23,11 @@ export
     convert_to_scheme,
     image_to_swatch,
     sortcolorscheme,
-    get_linear_segment_color
+    make_linear_segment_colorscheme,
+    get_linear_segment_color,
+    make_indexed_list_colorscheme,
+    get_indexed_list_color,
+    make_functional_colorscheme
 
 """
     extract(imfile, n=10, i=10, tolerance=0.01; shrink=n)
@@ -63,7 +76,8 @@ end
     colorscheme_weighted(colorscheme, weights, length)
 
 Returns a new colorscheme of length `length` (default 50) where the proportion
-of each color in `colorscheme` is represented by the associated weight of each entry.
+of each color in `colorscheme` is represented by the associated weight of each
+entry.
 
 Examples:
 
@@ -188,11 +202,14 @@ function image_to_swatch(imagefilepath, n::Int64, destinationpath; nrows=50, til
 end
 
 """
-    colorscheme_to_text(cscheme::ColorScheme, schemename, filename; comment="")
+    colorscheme_to_text(cscheme::ColorScheme, schemename, filename;
+        category="dutch painters",   # category
+        notes="it's not really lost" # notes
+    )
 
 Write a colorscheme to a Julia text file.
 
-##Example
+## Example
 
 ```
 colorscheme_to_text(ColorSchemes.vermeer,
@@ -224,30 +241,29 @@ end
 """
     get_linear_segment_color(dict, n)
 
-Get the color for value `n` from a dictionary of linear color segments.
+Get the RGB color for value `n` from a dictionary of linear color segments.
 
-For example, suppose you want red to increase from 0 to 1 over the bottom half,
-green to do the same over the middle half, and blue over the top half. A
-suitable dictionary would look like this:
+A dictionary where red increases from 0 to 1 over the bottom half, green does
+the same over the middle half, and blue over the top half, looks like this:
 
 ```
-cdict = Dict(:red  => ((0.0, 0.0, 0.0),
-                       (0.5, 1.0, 1.0),
-                       (1.0, 1.0, 1.0)),
-            :green => ((0.0, 0.0, 0.0),
-                       (0.25, 0.0, 0.0),
-                       (0.75, 1.0, 1.0),
-                       (1.0,  1.0, 1.0)),
-            :blue =>  ((0.0,  0.0, 0.0),
-                       (0.5,  0.0, 0.0),
-                       (1.0,  1.0, 1.0)))
+cdict = Dict(:red  => ((0.0,  0.0,  0.0),
+                       (0.5,  1.0,  1.0),
+                       (1.0,  1.0,  1.0)),
+            :green => ((0.0,  0.0,  0.0),
+                       (0.25, 0.0,  0.0),
+                       (0.75, 1.0,  1.0),
+                       (1.0,  1.0,  1.0)),
+            :blue =>  ((0.0,  0.0,  0.0),
+                       (0.5,  0.0,  0.0),
+                       (1.0,  1.0,  1.0)))
 ```
 
-Each color is defined by a set of tuples. In each tuple, the first number is
-`x`. Colors are linearly interpolated in bands between consecutive values of x;
-if the first tuple is given by ``(Z, A, B)`` and the second tuple by `(X, C,
-D)`, the color of a point `n` between Z and X will be given by `(n - Z) / (X -
-Z) * (C - B) + B`.
+The value of RGB component at every value of `n` is defined by a set of tuples.
+In each tuple, the first number is `x`. Colors are linearly interpolated in
+bands between consecutive values of `x`; if the first tuple is given by `(Z, A,
+B)` and the second tuple by `(X, C, D)`, the color of a point `n` between Z and
+X will be given by `(n - Z) / (X - Z) * (C - B) + B`.
 
 For example, given an entry like this:
 
@@ -259,6 +275,7 @@ For example, given an entry like this:
 
 and if `n` = 0.75, we return 1.0; 0.75 is between the second and third segments,
 but we'd already reached 1.0 (segment 2) when `n` was 0.5.
+
 """
 function get_linear_segment_color(dict, n)
     result = Float64[]
@@ -279,6 +296,146 @@ function get_linear_segment_color(dict, n)
         push!(result, color_at_n)
     end
     return result
+end
+
+"""
+    make_linear_segment_colorscheme(dict, :name::Symbol;
+        length=100)
+"""
+function make_linear_segment_colorscheme(dict;
+        length=100)
+    cs = ColorScheme([RGB(get_linear_segment_color(dict, i)...)
+        for i in range(0, stop=1, length=length)],
+        "", "")
+    return cs
+end
+
+function lerp(x, from_min, from_max, to_min=0.0, newmax=1.0)
+   if !isapprox(from_max, from_min)
+       return ((x - from_min) / (from_max - from_min)) * (newmax - to_min) + to_min
+   else
+       return from_max
+   end
+end
+
+"""
+    get_indexed_list_color(indexedlist, n)
+
+Get the color at a point `n` given an indexed list of triples like this:
+
+```
+gist_rainbow = (
+       (0.000,   (1.00, 0.00, 0.16)),
+       (0.030,   (1.00, 0.00, 0.00)),
+       (0.215,   (1.00, 1.00, 0.00)),
+       (0.400,   (0.00, 1.00, 0.00)),
+       (0.586,   (0.00, 1.00, 1.00)),
+       (0.770,   (0.00, 0.00, 1.00)),
+       (0.954,   (1.00, 0.00, 1.00)),
+       (1.000,   (1.00, 0.00, 0.75))
+    )
+```
+
+To make a colorscheme, use...
+
+```
+make_indexed_list_colorscheme(gist_rainbow, :gist_rainbow)
+```
+
+"""
+function get_indexed_list_color(indexedlist, n)
+   n = clamp(n, 0.0, 1.0)
+   upper = max(2, findfirst(f -> n <= first(first(f)), indexedlist))
+   lower = max(1, upper - 1)
+   lowercolorvalues = last(indexedlist[lower])
+   uppercolorvalues = last(indexedlist[upper])
+   lowerv = first(indexedlist[lower])
+   upperv = first(indexedlist[upper])
+   lr, lg, lb = lowercolorvalues
+   ur, ug, ub = uppercolorvalues
+   r = lerp(n, lowerv, upperv, lr, ur)
+   g = lerp(n, lowerv, upperv, lg, ug)
+   b = lerp(n, lowerv, upperv, lb, ub)
+   return round.((r, g, b), digits=6)
+end
+
+"""
+    make_indexed_list_colorscheme(indexedlist, name::Symbol;
+        length=100)
+
+Make a colorscheme using an 'indexed list' like this:
+
+```
+gist_rainbow = (
+       (0.000, (1.00, 0.00, 0.16)),
+       (0.030, (1.00, 0.00, 0.00)),
+       (0.215, (1.00, 1.00, 0.00)),
+       (0.400, (0.00, 1.00, 0.00)),
+       (0.586, (0.00, 1.00, 1.00)),
+       (0.770, (0.00, 0.00, 1.00)),
+       (0.954, (1.00, 0.00, 1.00)),
+       (1.000, (1.00, 0.00, 0.75))
+)
+
+The first element of this list of tuples is the point on the color scheme.
+
+make_indexed_list_colorscheme(gist_rainbow)
+```
+
+"""
+function make_indexed_list_colorscheme(indexedlist;
+        length=100)
+    cs = ColorScheme([RGB(get_indexed_list_color(indexedlist, i)...)
+        for i in range(0, stop=1, length=length)],
+        "", "indexed list")
+    return cs
+end
+
+"""
+    make_functional_colorscheme(redfunction, greenfunction, bluefunction;
+            length=100)
+
+Make a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.
+
+## Examples
+
+```
+make_functional_colorscheme(identity, identity, identity)
+```
+
+returns a smooth black to white gradient, because the `identity()` function
+gives back as good as it gets.
+
+```
+make_functional_colorscheme((n) -> round(n, digits=1), (n) -> round(n, digits=1), (n) -> round(n, digits=1))
+```
+
+returns a stepped gradient, as each point on the scheme is nudged to the nearest multiple of 0.1.
+
+```
+make_functional_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)
+```
+
+returns a colorscheme that goes from black to red and back again.
+
+```
+ripple10(n) = sin(2π * 10n)
+ripple13(n) = sin(2π * 13n)
+ripple17(n) = sin(2π * 17n)
+make_functional_colorscheme(ripple10, ripple13, ripple17, length=400)
+```
+
+produces a stripey colorscheme as the rippling sine waves continually change phase.
+"""
+function make_functional_colorscheme(redf::Function, greenf::Function, bluef::Function;
+        length=100)
+    cs = RGB[]
+    for i in range(0, stop=1, length=length)
+        r, g, b = redf(i), greenf(i), bluef(i)
+        r, g, b = clamp!([r, g, b], 0.0, 1.0)
+        push!(cs, RGB(r, g, b))
+    end
+    return ColorScheme(cs, "", "functional colorscheme")
 end
 
 end
