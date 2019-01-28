@@ -299,7 +299,7 @@ function get_linear_segment_color(dict, n)
 end
 
 """
-    make_linear_segment_colorscheme(dict, :name::Symbol;
+    make_linear_segment_colorscheme(dict;
         length=100)
 """
 function make_linear_segment_colorscheme(dict;

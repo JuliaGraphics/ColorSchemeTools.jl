@@ -1,4 +1,4 @@
-using Documenter, ColorSchemes, ColorSchemeTools
+using Documenter, ColorSchemes, ColorSchemeTools, Luxor, Colors
 
 makedocs(
     modules = [ColorSchemeTools],
