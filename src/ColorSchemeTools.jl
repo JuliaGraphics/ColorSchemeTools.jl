@@ -4,8 +4,7 @@ This package provides some tools for working with ColorSchemes:
     colorscheme_to_image(), colorscheme_to_text(), colorscheme_weighted(),
     compare_colors(), extract(), extract_weighted_colors(), convert_to_scheme(),
     image_to_swatch(), sortcolorscheme(), get_linear_segment_color(),
-    make_linear_segment_colorscheme(), make_indexed_list_colorscheme(),
-    get_indexed_list_color(), make_functional_colorscheme()
+    make_colorscheme(), get_indexed_list_color()
 """
 module ColorSchemeTools
 
@@ -23,11 +22,9 @@ export
     convert_to_scheme,
     image_to_swatch,
     sortcolorscheme,
-    make_linear_segment_colorscheme,
+    make_colorscheme,
     get_linear_segment_color,
-    make_indexed_list_colorscheme,
-    get_indexed_list_color,
-    make_functional_colorscheme
+    get_indexed_list_color
 
 """
     extract(imfile, n=10, i=10, tolerance=0.01; shrink=n)
@@ -43,7 +40,7 @@ function extract(imfile, n=10, i=10, tolerance=0.01; kwargs...)
     return ewc
 end
 
-"""
+"""/
     extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2)
 
 Extract colors and weights of the clusters of colors in an image file. Returns a
@@ -299,10 +296,10 @@ function get_linear_segment_color(dict, n)
 end
 
 """
-    make_linear_segment_colorscheme(dict;
+    make_colorscheme(dict;
         length=100)
 """
-function make_linear_segment_colorscheme(dict;
+function make_colorscheme(dict::Dict;
         length=100)
     cs = ColorScheme([RGB(get_linear_segment_color(dict, i)...)
         for i in range(0, stop=1, length=length)],
@@ -360,7 +357,7 @@ function get_indexed_list_color(indexedlist, n)
 end
 
 """
-    make_indexed_list_colorscheme(indexedlist, name::Symbol;
+    make_colorscheme(indexedlist, name::Symbol;
         length=100)
 
 Make a colorscheme using an 'indexed list' like this:
@@ -377,13 +374,12 @@ gist_rainbow = (
        (1.000, (1.00, 0.00, 0.75))
 )
 
-The first element of this list of tuples is the point on the color scheme.
-
-make_indexed_list_colorscheme(gist_rainbow)
+make_colorscheme(gist_rainbow)
 ```
 
+The first element of this list of tuples is the point on the color scheme.
 """
-function make_indexed_list_colorscheme(indexedlist;
+function make_colorscheme(indexedlist::Tuple;
         length=100)
     cs = ColorScheme([RGB(get_indexed_list_color(indexedlist, i)...)
         for i in range(0, stop=1, length=length)],
@@ -392,42 +388,13 @@ function make_indexed_list_colorscheme(indexedlist;
 end
 
 """
-    make_functional_colorscheme(redfunction, greenfunction, bluefunction;
+    make_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;
             length=100)
 
 Make a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.
 
-## Examples
-
-```
-make_functional_colorscheme(identity, identity, identity)
-```
-
-returns a smooth black to white gradient, because the `identity()` function
-gives back as good as it gets.
-
-```
-make_functional_colorscheme((n) -> round(n, digits=1), (n) -> round(n, digits=1), (n) -> round(n, digits=1))
-```
-
-returns a stepped gradient, as each point on the scheme is nudged to the nearest multiple of 0.1.
-
-```
-make_functional_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)
-```
-
-returns a colorscheme that goes from black to red and back again.
-
-```
-ripple10(n) = sin(2π * 10n)
-ripple13(n) = sin(2π * 13n)
-ripple17(n) = sin(2π * 17n)
-make_functional_colorscheme(ripple10, ripple13, ripple17, length=400)
-```
-
-produces a stripey colorscheme as the rippling sine waves continually change phase.
 """
-function make_functional_colorscheme(redf::Function, greenf::Function, bluef::Function;
+function make_colorscheme(redf::Function, greenf::Function, bluef::Function;
         length=100)
     cs = RGB[]
     for i in range(0, stop=1, length=length)

@@ -5,7 +5,7 @@
     Drawing(w, h, filename)
     origin()
     background("white")
-
+    setlinejoin("bevel")
     # three rows, one column
     table = Table([2h/3, h/6, h/6], w)
 
@@ -49,11 +49,11 @@
             push!(blueline, Point(x, boxbottomcenter(bbox).y - verticalscale * b))
         end
         sethue("red")
-        poly(redline, :stroke)
+        prettypoly(redline, :stroke, () -> circle(O, 1.2, :fill))
         sethue("green")
-        poly(greenline, :stroke)
+        prettypoly(greenline, :stroke, () -> circle(O, 1.2, :fill))
         sethue("blue")
-        poly(blueline, :stroke)
+        prettypoly(blueline, :stroke, () -> circle(O, 1.2, :fill))
     end
 
     # second tile, swatches
@@ -94,71 +94,66 @@
 
 # Making new colorschemes
 
-There are a few functions that can make new ColorSchemes:
+To make new ColorSchemes, you can use `make_colorscheme()`, and supply information about the color sequences in various formats:
 
-- `make_linear_segment_colorscheme()`
-- `make_indexed_list_colorscheme()`
-- `make_functional_colorscheme()`
+- linearly-segmented dictionary
+- 'indexed list'
+- defined by three functions
 
 ## Linearly-segmented colors
 
 A linearly-segmented color dictionary looks like this:
 
 ```
-hsvdict = Dict(:red => ((0., 1., 1.),
-                       (0.158730, 1.000000, 1.000000),
-                       (0.174603, 0.968750, 0.968750),
-                       (0.333333, 0.031250, 0.031250),
-                       (0.349206, 0.000000, 0.000000),
-                       (0.666667, 0.000000, 0.000000),
-                       (0.682540, 0.031250, 0.031250),
-                       (0.841270, 0.968750, 0.968750),
-                       (0.857143, 1.000000, 1.000000),
-                       (1.0, 1.0, 1.0)),
-             :green => ((0., 0., 0.),
-                       (0.158730, 0.937500, 0.937500),
-                       (0.174603, 1.000000, 1.000000),
-                       (0.507937, 1.000000, 1.000000),
-                       (0.666667, 0.062500, 0.062500),
-                       (0.682540, 0.000000, 0.000000),
-                       (1.0, 0., 0.)),
-             :blue =>  ((0., 0., 0.),
-                       (0.333333, 0.000000, 0.000000),
-                       (0.349206, 0.062500, 0.062500),
-                       (0.507937, 1.000000, 1.000000),
-                       (0.841270, 1.000000, 1.000000),
-                       (0.857143, 0.937500, 0.937500),
-                       (1.0, 0.09375, 0.09375)))
+cdict = Dict(:red  => ((0.0,  0.0,  0.0),
+                       (0.5,  1.0,  1.0),
+                       (1.0,  1.0,  1.0)),
+            :green => ((0.0,  0.0,  0.0),
+                       (0.25, 0.0,  0.0),
+                       (0.75, 1.0,  1.0),
+                       (1.0,  1.0,  1.0)),
+            :blue =>  ((0.0,  0.0,  0.0),
+                       (0.5,  0.0,  0.0),
+                       (1.0,  1.0,  1.0)))
 ```
 
 The first number in each tuple for each color increases from 0 to 1, the second
 and third determine the color values. (TODO - how exactly?)
 
-To create a new ColorScheme from this, call `make_linear_segment_colorscheme()`.
+To create a new ColorScheme from a suitable dictionary, call `make_colorscheme()`.
 
 ```
 using Colors, ColorSchemes
-scheme = make_linear_segment_colorscheme(hsvdict)
+scheme = make_colorscheme(dict)
 ```
 
-Save an image of this:
-
-```
-using ColorSchemes, FileIO
-img = colorscheme_to_image(ColorScheme(scheme), 450, 60)
-save("/tmp/linseg.png", img)
-```
-
-!["linear segmented colorscheme"](assets/figures/linearsegmentedcolors.png)
-
-By plotting the color components separately it's possible to see how the curves change. This is what the `hsv` scheme looks like:
+By plotting the color components separately it's possible to see how the curves change. This diagram both the defined color levels and a continuously-sampled image:
 
 ```@example drawscheme
-draw_rgb_levels(ColorSchemes.hsv, 800, 200, "assets/figures/hsvcurves.svg") #hide
+cdict = Dict(:red  => ((0.0,  0.0,  0.0),
+                       (0.5,  1.0,  1.0),
+                       (1.0,  1.0,  1.0)),
+            :green => ((0.0,  0.0,  0.0),
+                       (0.25, 0.0,  0.0),
+                       (0.75, 1.0,  1.0),
+                       (1.0,  1.0,  1.0)),
+            :blue =>  ((0.0,  0.0,  0.0),
+                       (0.5,  0.0,  0.0),
+                       (1.0,  1.0,  1.0))) # hide
+scheme = make_colorscheme(cdict)
+draw_rgb_levels(scheme, 800, 200, "assets/figures/curves.svg") # hide
 nothing # hide
 ```
 
-!["hsv linear segmented colorscheme"](assets/figures/hsvcurves.svg)
+!["showing linear segmented colorscheme"](assets/figures/curves.svg)
+
+If you want to save an image of this, use `colorscheme_to_image()`:
+
+```
+using ColorSchemes, ColorSchemeTools, FileIO
+img = colorscheme_to_image(ColorScheme(scheme), 450, 60)
+save("/tmp/linseg.png", img)
+```
 
 ```@docs
 get_linear_segment_color
@@ -169,56 +164,99 @@ get_linear_segment_color
 An 'indexed list' color scheme looks like this:
 
 ```
-_terrain = (
-        (0.00, (0.2, 0.2, 0.6)),
-        (0.15, (0.0, 0.6, 1.0)),
-        (0.25, (0.0, 0.8, 0.4)),
-        (0.50, (1.0, 1.0, 0.6)),
-        (0.75, (0.5, 0.36, 0.33)),
-        (1.00, (1.0, 1.0, 1.0)))
+terrain = (
+           (0.00, (0.2, 0.2,  0.6)),
+           (0.15, (0.0, 0.6,  1.0)),
+           (0.25, (0.0, 0.8,  0.4)),
+           (0.50, (1.0, 1.0,  0.6)),
+           (0.75, (0.5, 0.36, 0.33)),
+           (1.00, (1.0, 1.0,  1.0))
+          )
 ```
 
-The first element in each is the point on the color scheme, the second specifies the RGB values at that point.
+The first element in each is the location between 0 and 1, the second specifies the RGB values at that point.
 
-The `make_indexed_list_colorscheme(indexedlist)` function makes a new ColorScheme from an indexed list.
+The `make_colorscheme(indexedlist)` function makes a new ColorScheme from such an indexed list.
 
 ```
-make_indexed_list_colorscheme(_terrain)
+make_colorscheme(terrain)
 ```
 
 ```@example drawscheme
-_terrain = (
+terrain_data = (
         (0.00, (0.2, 0.2, 0.6)),
         (0.15, (0.0, 0.6, 1.0)),
         (0.25, (0.0, 0.8, 0.4)),
         (0.50, (1.0, 1.0, 0.6)),
         (0.75, (0.5, 0.36, 0.33)),
         (1.00, (1.0, 1.0, 1.0)))
-terrain = make_indexed_list_colorscheme(_terrain)
+terrain = make_colorscheme(terrain_data, length = 20)
 draw_rgb_levels(terrain, 800, 200, "assets/figures/terrain.svg") # hide
 nothing # hide
 ```
 
 !["indexed lists scheme"](assets/figures/terrain.svg)
 
-```@docs
-make_indexed_list_colorscheme
-```
-
 ## Functional color schemes
 
 The colors in a 'functional' color scheme are produced by three functions that calculate the color values at each point on the scheme.
 
-The `make_functional_colorscheme()` function takes three functions and applies them at each point on the colorscheme.
+The `make_colorscheme()` function applies the first supplied function at each point on the colorscheme for the red values, the second function for the green values, and the third for the blue. You can use defined functions or supply anonymous ones.
+
+### Examples
+
+This example returns a smooth black to white gradient, because the `identity()` function gives back as good as it gets.
 
 ```@example drawscheme
-fscheme = make_functional_colorscheme(sqrt, sin, cos)
-draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcschemecurves.svg") # hide
+fscheme = make_colorscheme(identity, identity, identity)
+draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme1.svg") # hide
 nothing # hide
 ```
+!["functional color schemes"](assets/figures/funcscheme1.svg)
 
-!["functional color schemes"](assets/figures/funcschemecurves.svg)
+This next example uses the `sin()` function on values from 0 to π to control the red, and the `cos()` function from 0 to π to control the blue.
+
+```@example drawscheme
+fscheme = make_colorscheme((n) -> sin(n*π), (n) -> 0, (n) -> cos(n*π))
+draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme2.svg") # hide
+nothing # hide
+```
+!["functional color schemes"](assets/figures/funcscheme2.svg)
+
+You can generate stepped gradients by controlling the numbers. Here, each point on the scheme is nudged to the nearest multiple of 0.1.
+
+```@example drawscheme
+fscheme = make_colorscheme(
+        (n) -> round(n, digits=1),
+        (n) -> round(n, digits=1),
+        (n) -> round(n, digits=1), length=10)
+draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme3.svg") # hide
+nothing # hide
+```
+!["functional color schemes"](assets/figures/funcscheme3.svg)
+
+This example sends the red channel from black to red and back again.
+
+```@example drawscheme
+fscheme = make_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)
+draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme4.svg") # hide
+nothing # hide
+```
+!["functional color schemes"](assets/figures/funcscheme4.svg)
+
+This example produces a stripey colorscheme as the rippling sine waves continually change phase:
+
+```@example drawscheme
+ripple7(n) = sin(π * 7n)
+ripple13(n) = sin(π * 13n)
+ripple17(n) = sin(π * 17n)
+fscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)
+draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme5.svg") # hide
+nothing # hide
+```
+!["functional color schemes"](assets/figures/funcscheme5.svg)
+
 
 ```@docs
-make_functional_colorscheme
+make_colorscheme
 ```

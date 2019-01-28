@@ -2,7 +2,7 @@
 
 This package provides tools for working with colorschemes and colormaps.
 
-For example, you can extract colorschemes from images, and replace an image colorscheme with another.
+For example, you can extract color schemes from images, and replace an image's color scheme with another. There are also function for creating ColorSchemes from pre-defined lists or Julia functions.
 
 This package relies on:
 - [Colors.jl](https://github.com/JuliaGraphics/Colors.jl)
