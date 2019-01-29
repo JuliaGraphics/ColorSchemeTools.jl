@@ -1,79 +1,96 @@
 ```@setup drawscheme
-    using Luxor, Colors, ColorSchemes, ColorSchemeTools
-
-    function draw_rgb_levels(cs::ColorScheme, w, h, filename)
+using Luxor, Colors, ColorSchemes, ColorSchemeTools
+function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-levels.svg")
+    # This function is a quick hack to draw swatches and curves in a documenter pass.
+    # The diagrams are merely illustrative, not 100% technically precise :(
     Drawing(w, h, filename)
     origin()
     background("white")
     setlinejoin("bevel")
-    # three rows, one column
-    table = Table([2h/3, h/6, h/6], w)
+    # three rows (thin, fat, thin), one wide column
+    table = Table([h/6, 2h/3, h/6], w)
+    l = length(cs.colors)
+    bbox = BoundingBox(box(O, table.colwidths[1], table.rowheights[2], vertices=true)) * 0.85
 
-    # top cell
-
-    # axes and labels
+    # axes and labels in main (second) cell of table
     @layer begin
-        translate(table[1])
-        bbox = BoundingBox(box(O, table.colwidths[1], table.rowheights[1], vertices=true)) * 0.8
+        translate(table[2])
         setline(0.5)
         fontsize(7)
-        sethue("grey80")
         box(bbox, :stroke)
         # horizontal lines
         div10 = boxheight(bbox)/10
         for (ylabel, yy) in enumerate(boxtopcenter(bbox).y:div10:boxbottomcenter(bbox).y)
+            sethue("grey85")
             rule(Point(0, yy), boundingbox=bbox)
+            sethue("grey55")
             text(string((11 - ylabel)/10), Point(boxbottomleft(bbox).x - 10, yy), halign=:right, valign=:middle)
         end
         # vertical lines
         div10 = boxwidth(bbox)/10
         for (xlabel, xx) in enumerate(boxtopleft(bbox).x:div10:boxtopright(bbox).x)
+            sethue("grey85")
             rule(Point(xx, 0), π/2, boundingbox=bbox)
+            sethue("grey55")
             text(string((xlabel - 1)/10), Point(xx, boxbottomleft(bbox).y + 10), halign=:center, valign=:bottom)
         end        
     end
+
+    # middle, show 'curves'
     # 'curves'
+    # run through color levels in scheme and sample/quantize
     @layer begin
-        translate(table[1])
-        setline(1.5)
-        l = length(cs.colors)
+        translate(table[2])
         redline = Point[]
         greenline = Point[]
         blueline = Point[]
         verticalscale=boxheight(bbox)
-        for n in 1:l
-            x = rescale(n, 1, l, -boxwidth(bbox)/2, boxwidth(bbox)/2)
-            r = red(cs.colors[n])
-            g = green(cs.colors[n])
-            b = blue(cs.colors[n])
+        stepping = 0.0025
+        # TODO better way to examine quantized color values
+        for i in 0:stepping:1
+            swatch = convert(Int, round(rescale(i, 0, 1, 1, l)))
+            c = cs[swatch]
+            r = red(c)
+            g = green(c)
+            b = blue(c)
+            x = rescale(i, 0, 1, -boxwidth(bbox)/2, boxwidth(bbox)/2)
             push!(redline, Point(x, boxbottomcenter(bbox).y - verticalscale * r))
             push!(greenline, Point(x, boxbottomcenter(bbox).y - verticalscale * g))
-            push!(blueline, Point(x, boxbottomcenter(bbox).y - verticalscale * b))
+            push!(blueline, Point(x, boxbottomcenter(bbox).y - verticalscale * b))        
         end
-        sethue("red")
-        prettypoly(redline, :stroke, () -> circle(O, 1.2, :fill))
-        sethue("green")
-        prettypoly(greenline, :stroke, () -> circle(O, 1.2, :fill))
+        # the idea to make the lines different weights to assist reading overlaps may not be a good one
+        setline(1)
         sethue("blue")
-        prettypoly(blueline, :stroke, () -> circle(O, 1.2, :fill))
+        poly(blueline, :stroke)
+        setline(0.8)
+        sethue("red")
+        poly(redline, :stroke)
+        setline(0.7)
+        sethue("green")
+        poly(greenline, :stroke)
     end
-
-    # second tile, swatches
+    # top tile, swatches
     @layer begin
-        translate(table[2])
+        translate(table[1])
         # draw in a single pane
-        panes = Tiler(boxwidth(bbox), table.rowheights[2], 1, 1)
+        panes = Tiler(boxwidth(bbox), table.rowheights[1], 1, 1, margin=0)
         panewidth = panes.tilewidth
         paneheight = panes.tileheight
-
         # draw the swatches
         swatchwidth = panewidth/l
         for (i, p) in enumerate(cs.colors)
+            swatchcenter = Point(boxtopleft(bbox).x - swatchwidth/2 + (i * swatchwidth) , O.y)
             sethue(p)
-            box(Point(O.x - panewidth/2 + ((i - 1) * swatchwidth) - swatchwidth/2, O.y), swatchwidth, table.rowheights[2]/2, :fillstroke)
+            box(swatchcenter, swatchwidth - 1, table.rowheights[1]/2 - 1,  :fill)
+            if colordiff(p, colorant"white") < 1
+                @layer begin
+                    setline(0.4)
+                    sethue("grey70")
+                    box(swatchcenter, swatchwidth - 1, table.rowheights[1]/2 - 1,  :stroke)
+                end
+            end
         end
     end
-
     # third tile, continuous sampling
     @layer begin
         translate(table[3])
@@ -87,19 +104,18 @@
             box(Point(xpos + boxw/2, O.y), boxw, table.rowheights[3]/2, :fillstroke)
         end
     end
-
     finish()
-    end
     nothing
+end
 ```
 
 # Making new colorschemes
 
-To make new ColorSchemes, you can use `make_colorscheme()`, and supply information about the color sequences in various formats:
+To make new ColorSchemes, you can build arrays of colors—see the ColorSchemes documentation. You can also use ColorSchemeTools function `make_colorscheme()`, and supply information about the color sequences you want. The following formats are possible:
 
-- linearly-segmented dictionary
-- 'indexed list'
-- defined by three functions
+- a dictionary of linear segments
+- an 'indexed list' of RGB values
+- three Julia functions that generate values between 0 and 1 for the RGB levels
 
 ## Linearly-segmented colors
 
@@ -118,8 +134,7 @@ cdict = Dict(:red  => ((0.0,  0.0,  0.0),
                        (1.0,  1.0,  1.0)))
 ```
 
-The first number in each tuple for each color increases from 0 to 1, the second
-and third determine the color values. (TODO - how exactly?)
+For each color, the first number in each tuple increases from 0 to 1, and the second and third determine the color values. (TODO - how exactly?)
 
 To create a new ColorScheme from a suitable dictionary, call `make_colorscheme()`.
 
@@ -128,7 +143,7 @@ using Colors, ColorSchemes
 scheme = make_colorscheme(dict)
 ```
 
-By plotting the color components separately it's possible to see how the curves change. This diagram shows both the defined color levels and a continuously-sampled image below it:
+By plotting the color components separately it's possible to see how the curves change. This diagram shows both the defined color levels as swatches along the top, and a continuously-sampled image below:
 
 ```@example drawscheme
 cdict = Dict(:red  => ((0.0,  0.0,  0.0),
@@ -156,9 +171,6 @@ img = colorscheme_to_image(ColorScheme(scheme), 450, 60)
 save("/tmp/linseg.png", img)
 ```
 
-```@docs
-get_linear_segment_color
-```
 
 ## Indexed-list color schemes
 
@@ -189,7 +201,7 @@ terrain_data = (
         (0.50, (1.0, 1.0, 0.6)),
         (0.75, (0.5, 0.36, 0.33)),
         (1.00, (1.0, 1.0, 1.0)))
-terrain = make_colorscheme(terrain_data, length = 20)
+terrain = make_colorscheme(terrain_data, length = 50)
 draw_rgb_levels(terrain, 800, 200, "assets/figures/terrain.svg") # hide
 nothing # hide
 ```
@@ -202,9 +214,11 @@ The colors in a 'functional' color scheme are produced by three functions that c
 
 The `make_colorscheme()` function applies the first supplied function at each point on the colorscheme for the red values, the second function for the green values, and the third for the blue. You can use defined functions or supply anonymous ones.
 
+Values produced by the functions are clamped to 0.0 and 1.0 before they're converted to RGB values.
+
 ### Examples
 
-This example returns a smooth black to white gradient, because the `identity()` function gives back as good as it gets.
+The first example returns a smooth black to white gradient, because the `identity()` function gives back as good as it gets.
 
 ```@example drawscheme
 fscheme = make_colorscheme(identity, identity, identity)
@@ -213,7 +227,7 @@ nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme1.svg)
 
-This next example uses the `sin()` function on values from 0 to π to control the red, and the `cos()` function from 0 to π to control the blue.
+The next example uses the `sin()` function on values from 0 to π to control the red, and the `cos()` function from 0 to π to control the blue. The green channel is flat-lined.
 
 ```@example drawscheme
 fscheme = make_colorscheme((n) -> sin(n*π), (n) -> 0, (n) -> cos(n*π))
@@ -234,7 +248,7 @@ nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme3.svg)
 
-This example sends the red channel from black to red and back again.
+The next example sends the red channel from black to red and back again.
 
 ```@example drawscheme
 fscheme = make_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)
@@ -243,10 +257,10 @@ nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme4.svg)
 
-This example produces a stripey colorscheme as the rippling sine waves continually change phase:
+The final example produces a stripey colorscheme as the rippling sine waves continually change phase:
 
 ```@example drawscheme
-ripple7(n) = sin(π * 7n)
+ripple7(n)  = sin(π * 7n)
 ripple13(n) = sin(π * 13n)
 ripple17(n) = sin(π * 17n)
 fscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)
@@ -257,5 +271,6 @@ nothing # hide
 
 
 ```@docs
+get_linear_segment_color
 make_colorscheme
 ```
