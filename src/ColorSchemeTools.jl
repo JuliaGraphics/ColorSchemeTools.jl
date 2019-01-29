@@ -357,7 +357,7 @@ function get_indexed_list_color(indexedlist, n)
 end
 
 """
-    make_colorscheme(indexedlist, name::Symbol;
+    make_colorscheme(indexedlist;
         length=100)
 
 Make a colorscheme using an 'indexed list' like this:
