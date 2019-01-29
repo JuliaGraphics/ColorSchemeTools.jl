@@ -111,7 +111,7 @@ end
 
 # Making new colorschemes
 
-To make new ColorSchemes, you can build arrays of colors—see the ColorSchemes documentation. You can also use ColorSchemeTools function `make_colorscheme()`, and supply information about the color sequences you want. The following formats are possible:
+To make new ColorSchemes, you can build arrays of colors—see the ColorSchemes.jl documentation. You can also use the ColorSchemeTools function `make_colorscheme()`, and supply information about the color sequences you want. The following formats are possible:
 
 - a dictionary of linear segments
 - an 'indexed list' of RGB values
@@ -122,21 +122,32 @@ To make new ColorSchemes, you can build arrays of colors—see the ColorSchemes 
 A linearly-segmented color dictionary looks like this:
 
 ```
-cdict = Dict(:red  => ((0.0,  0.0,  0.0),
-                       (0.5,  1.0,  1.0),
-                       (1.0,  1.0,  1.0)),
-            :green => ((0.0,  0.0,  0.0),
-                       (0.25, 0.0,  0.0),
-                       (0.75, 1.0,  1.0),
-                       (1.0,  1.0,  1.0)),
-            :blue =>  ((0.0,  0.0,  0.0),
-                       (0.5,  0.0,  0.0),
-                       (1.0,  1.0,  1.0)))
+cdict = Dict(:red   => ((0.0,  0.0,  0.0),
+                        (0.5,  1.0,  1.0),
+                        (1.0,  1.0,  1.0)),
+             :green => ((0.0,  0.0,  0.0),
+                        (0.25, 0.0,  0.0),
+                        (0.75, 1.0,  1.0),
+                        (1.0,  1.0,  1.0)),
+             :blue  => ((0.0,  0.0,  0.0),
+                        (0.5,  0.0,  0.0),
+                        (1.0,  1.0,  1.0)))
 ```
 
-For each color, the first number in each tuple increases from 0 to 1, and the second and third determine the color values. (TODO - how exactly?)
+The triplets _aren't_ RGB values... For each color, the first number in each tuple gradually increases from 0 to 1, and the second and third determine the color values at that point. The change of color between point `n1` and `n2` is defined by `b` and `c`:
 
-To create a new ColorScheme from a suitable dictionary, call `make_colorscheme()`.
+```
+:red => (
+         ...,
+         (n1, a, b),
+         (n2, c, d),
+         ...
+         )
+```
+
+If `a and `b` (or `c` and `d`) aren't the same, the color will jump.
+
+To create a new ColorScheme from a suitable dictionary in this format, run `make_colorscheme()`.
 
 ```
 using Colors, ColorSchemes
@@ -170,7 +181,6 @@ using ColorSchemes, ColorSchemeTools, FileIO
 img = colorscheme_to_image(ColorScheme(scheme), 450, 60)
 save("/tmp/linseg.png", img)
 ```
-
 
 ## Indexed-list color schemes
 
@@ -269,8 +279,7 @@ nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme5.svg)
 
-
 ```@docs
-get_linear_segment_color
 make_colorscheme
+get_linear_segment_color
 ```

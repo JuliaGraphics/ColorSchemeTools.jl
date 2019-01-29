@@ -297,13 +297,17 @@ end
 
 """
     make_colorscheme(dict;
-        length=100)
+        length=100,
+        category="",
+        notes="")
 """
 function make_colorscheme(dict::Dict;
-        length=100)
+        length=100,
+        category="",
+        notes="")
     cs = ColorScheme([RGB(get_linear_segment_color(dict, i)...)
         for i in range(0, stop=1, length=length)],
-        "", "")
+        category, notes)
     return cs
 end
 
@@ -358,7 +362,9 @@ end
 
 """
     make_colorscheme(indexedlist;
-        length=100)
+        length=100,
+        category="",
+        notes="")
 
 Make a colorscheme using an 'indexed list' like this:
 
@@ -380,29 +386,35 @@ make_colorscheme(gist_rainbow)
 The first element of this list of tuples is the point on the color scheme.
 """
 function make_colorscheme(indexedlist::Tuple;
-        length=100)
+        length=100,
+        category="",
+        notes="indexed list")
     cs = ColorScheme([RGB(get_indexed_list_color(indexedlist, i)...)
         for i in range(0, stop=1, length=length)],
-        "", "indexed list")
+        category, notes)
     return cs
 end
 
 """
     make_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;
-            length=100)
+            length=100,
+            category="",
+            notes="")
 
 Make a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.
 
 """
 function make_colorscheme(redf::Function, greenf::Function, bluef::Function;
-        length=100)
+        length=100,
+        category="",
+        notes="functional colorscheme")
     cs = RGB[]
     for i in range(0, stop=1, length=length)
         r, g, b = redf(i), greenf(i), bluef(i)
         r, g, b = clamp!([r, g, b], 0.0, 1.0)
         push!(cs, RGB(r, g, b))
     end
-    return ColorScheme(cs, "", "functional colorscheme")
+    return ColorScheme(cs, category, notes)
 end
 
 end

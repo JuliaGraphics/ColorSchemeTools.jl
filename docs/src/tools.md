@@ -12,7 +12,9 @@ You can extract a colorscheme from an image. For example, here's an image of a f
 
 Use `extract()` to create a colorscheme from the original image:
 
-    monalisa = extract("monalisa.jpg", 10, 15, 0.01; shrink=2)
+```
+monalisa = extract("monalisa.jpg", 10, 15, 0.01; shrink=2)
+```
 
 which in this example creates a 10-color scheme (using 15 iterations and with a tolerance of 0.01; the image can be reduced in size, here by 2, before processing, to save time).
 
@@ -31,7 +33,7 @@ which in this example creates a 10-color scheme (using 15 iterations and with a 
     RGB{Float64}(0.880421,0.851357,0.538013),
     RGB{Float64}(0.738879,0.709218,0.441082)]
 
-(Extracting colorschemes from images requires image importing and exporting abilities. These are platform-specific. On Linux/UNIX, ImageMagick can be used for importing and exporting images. Use QuartzImageIO on macOS.)
+(Extracting colorschemes from images may require you to install image importing and exporting abilities. These are platform-specific. On Linux/UNIX, ImageMagick.jl can be used for importing and exporting images. Use QuartzImageIO.jl on macOS.)
 
 ```@docs
 extract
@@ -62,7 +64,7 @@ sortcolorscheme
 Sometimes an image is dominated by some colors with others occurring less frequently. For example, there may be much more brown than yellow in a particular image. A colorscheme derived from this image can reflect this. You can extract both a set of colors and a set of numerical values or weights that indicate the proportions of colors in the image.
 
 ```
-using Images
+# using Images
 cs, wts = extract_weighted_colors("monalisa.jpg", 10, 15, 0.01; shrink=2)
 ```
 
@@ -92,7 +94,9 @@ colorscheme_weighted(cs, wts, len)
 
 Or in one go:
 
-    colorscheme_weighted(extract_weighted_colors("monalisa.jpg")...)
+```
+colorscheme_weighted(extract_weighted_colors("monalisa.jpg" # ...
+```
 
 Compare the weighted and unweighted versions of schemes extracted from the Hokusai image "The Great Wave":
 
