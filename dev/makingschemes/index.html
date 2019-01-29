@@ -52,7 +52,7 @@ fscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)</code></pre><
                        (1.0,  1.0,  1.0)))</code></pre><p>The value of RGB component at every value of <code>n</code> is defined by a set of tuples. In each tuple, the first number is <code>x</code>. Colors are linearly interpolated in bands between consecutive values of <code>x</code>; if the first tuple is given by <code>(Z, A, B)</code> and the second tuple by <code>(X, C, D)</code>, the color of a point <code>n</code> between Z and X will be given by <code>(n - Z) / (X - Z) * (C - B) + B</code>.</p><p>For example, given an entry like this:</p><pre><code class="language-none">:red  =&gt; ((0.0, 0.0, 0.0),
           (0.5, 1.0, 1.0),
           (1.0, 1.0, 1.0))</code></pre><p>and if <code>n</code> = 0.75, we return 1.0; 0.75 is between the second and third segments, but we&#39;d already reached 1.0 (segment 2) when <code>n</code> was 0.5.</p></div></div></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="ColorSchemeTools.make_colorscheme" href="#ColorSchemeTools.make_colorscheme"><code>ColorSchemeTools.make_colorscheme</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-none">make_colorscheme(dict;
-    length=100)</code></pre></div></div><div><div><pre><code class="language-none">make_colorscheme(indexedlist, name::Symbol;
+    length=100)</code></pre></div></div><div><div><pre><code class="language-none">make_colorscheme(indexedlist;
     length=100)</code></pre><p>Make a colorscheme using an &#39;indexed list&#39; like this:</p><pre><code class="language-none">gist_rainbow = (
        (0.000, (1.00, 0.00, 0.16)),
        (0.030, (1.00, 0.00, 0.00)),
