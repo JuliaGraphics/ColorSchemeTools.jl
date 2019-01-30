@@ -8,12 +8,12 @@
                         (1.0,  1.0,  1.0)),
              :blue  =&gt; ((0.0,  0.0,  0.0),
                         (0.5,  0.0,  0.0),
-                        (1.0,  1.0,  1.0)))</code></pre><p>The triplets <em>aren&#39;t</em> RGB values... For each color, the first number in each tuple gradually increases from 0 to 1, and the second and third determine the color values at that point. The change of color between point <code>n1</code> and <code>n2</code> is defined by <code>b</code> and <code>c</code>:</p><pre><code class="language-none">:red =&gt; (
+                        (1.0,  1.0,  1.0)))</code></pre><p>This specifies that red increases from 0 to 1 over the bottom half, green does the same over the middle half, and blue over the top half.</p><p>The triplets <em>aren&#39;t</em> RGB values... For each color, the first number in each tuple are points on the 0 to 1 scale, and should gradually increase. The second and third values determine the color values at that point. So the change of color between point <code>p1</code> and <code>p2</code> is defined by <code>b</code> and <code>c</code>:</p><pre><code class="language-none">:red =&gt; (
          ...,
-         (n1, a, b),
-         (n2, c, d),
+         (p1, a, b),
+         (p2, c, d),
          ...
-         )</code></pre><p>If <code>a and</code>b<code>(or</code>c<code>and</code>d`) aren&#39;t the same, the color will jump.</p><p>To create a new ColorScheme from a suitable dictionary in this format, run <code>make_colorscheme()</code>.</p><pre><code class="language-none">using Colors, ColorSchemes
+         )</code></pre><p>If <code>a</code> and <code>b</code> (or <code>c</code> and <code>d</code>) aren&#39;t the same, the color will abruptly jump. (Note that the very first <code>a</code> and the very last <code>d</code> aren&#39;t used.)</p><p>To create a new ColorScheme from a suitable dictionary in this format, run <code>make_colorscheme()</code>.</p><pre><code class="language-none">using Colors, ColorSchemes
 scheme = make_colorscheme(dict)</code></pre><p>By plotting the color components separately it&#39;s possible to see how the curves change. This diagram shows both the defined color levels as swatches along the top, and a continuously-sampled image below:</p><div><pre><code class="language-julia">cdict = Dict(:red  =&gt; ((0.0,  0.0,  0.0),
                        (0.5,  1.0,  1.0),
                        (1.0,  1.0,  1.0)),
