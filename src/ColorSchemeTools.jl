@@ -40,7 +40,7 @@ function extract(imfile, n=10, i=10, tolerance=0.01; kwargs...)
     return ewc
 end
 
-"""/
+"""
     extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2)
 
 Extract colors and weights of the clusters of colors in an image file. Returns a
@@ -48,7 +48,9 @@ ColorScheme and weights.
 
 Example:
 
-    pal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)
+```
+pal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)
+```
 """
 function extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2.0)
     img = load(imfile)
@@ -300,6 +302,9 @@ end
         length=100,
         category="",
         notes="")
+
+Make a new ColorScheme from a dictionary of linear-segment information. Calls
+`get_linear_segment_color(dict, n)` with `n` for every `length` value between 0 and 1.
 """
 function make_colorscheme(dict::Dict;
         length=100,
@@ -311,9 +316,21 @@ function make_colorscheme(dict::Dict;
     return cs
 end
 
-function lerp(x, from_min, from_max, to_min=0.0, newmax=1.0)
+"""
+    lerp((x, from_min, from_max, to_min=0.0, to_max=1.0)
+
+Linear interpolation of `x` between `from_min` and `from_max`.
+
+Example
+
+```
+ColorSchemeTools.lerp(128, 0, 256)
+0.5
+```
+"""
+function lerp(x, from_min, from_max, to_min=0.0, to_max=1.0)
    if !isapprox(from_max, from_min)
-       return ((x - from_min) / (from_max - from_min)) * (newmax - to_min) + to_min
+       return ((x - from_min) / (from_max - from_min)) * (to_max - to_min) + to_min
    else
        return from_max
    end
@@ -337,16 +354,15 @@ gist_rainbow = (
     )
 ```
 
-To make a colorscheme, use...
+To make a colorscheme, use:
 
 ```
-make_indexed_list_colorscheme(gist_rainbow, :gist_rainbow)
+make_colorscheme(gist_rainbow)
 ```
-
 """
 function get_indexed_list_color(indexedlist, n)
-   n = clamp(n, 0.0, 1.0)
-   upper = max(2, findfirst(f -> n <= first(first(f)), indexedlist))
+   m = clamp(n, 0.0, 1.0)
+   upper = max(2, findfirst(f -> m <= first(first(f)), indexedlist))
    lower = max(1, upper - 1)
    lowercolorvalues = last(indexedlist[lower])
    uppercolorvalues = last(indexedlist[upper])
@@ -354,9 +370,9 @@ function get_indexed_list_color(indexedlist, n)
    upperv = first(indexedlist[upper])
    lr, lg, lb = lowercolorvalues
    ur, ug, ub = uppercolorvalues
-   r = lerp(n, lowerv, upperv, lr, ur)
-   g = lerp(n, lowerv, upperv, lg, ug)
-   b = lerp(n, lowerv, upperv, lb, ub)
+   r = lerp(m, lowerv, upperv, lr, ur)
+   g = lerp(m, lowerv, upperv, lg, ug)
+   b = lerp(m, lowerv, upperv, lb, ub)
    return round.((r, g, b), digits=6)
 end
 

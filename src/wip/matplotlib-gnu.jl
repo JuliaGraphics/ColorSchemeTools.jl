@@ -1,13 +1,15 @@
 using ColorSchemeTools
 
-# translating colorschemes from https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/_cm.py
+# code in here is for translating colorschemes from
+# https://github.com/matplotlib/matplotlib/blob/master/lib/matplotlib/_cm.py
 # into ColorSchemeTools.jl compatible code
 
 # # Gnuplot palette functions
+# these are simply translated from Python
 _g0(x) = 0
 _g1(x) = 0.5
 _g2(x) = 1
-_g3(x) = x # really?
+_g3(x) = x # really
 _g4(x) = x^2
 _g5(x) = x^3
 _g6(x) = x^4
@@ -62,6 +64,9 @@ _g34(x) =  2x
 _g35(x) =  2x - 0.5
 _g36(x) =  2x - 1
 
+# Didn't bother with building these functions into gfunc()s
+# just pass the functions directly
+
 #
 # _gnuplot_data = Dict(
 #         :red => gfunc(7),
@@ -76,7 +81,7 @@ gnuplot = make_colorscheme(_g7, _g5, _g15)
 #         :green => gfunc(31),
 #         :blue => gfunc(32))
 # =>
-# this one is weird, so I fudged it thus
+# this one is the only weird one, so I fudged it thus
 wackyblues = _g32(range(0, stop=1, length=100))
 gnuplot2 = make_colorscheme(_g30, _g31, (n) -> wackyblues[convert(Int, floor(ColorSchemeTools.lerp(n, 0, 1, 1, 100)))])
 
@@ -110,10 +115,13 @@ rainbow = make_colorscheme(_g33, _g13, _g10)
 #         'green': gfunc[3],
 #         'blue': gfunc[3],
 # }
+# don't really get this next bit, but it's easy to avoid
 # def _gist_yarg(x): return 1 - x
 #_gist_yarg_data = {'red': _gist_yarg, 'green': _gist_yarg, 'blue': _gist_yarg} ??
 # =>
+
 gist_gray = make_colorscheme(identity, identity, identity)
+# tada!
 gist_yarg = ColorScheme(reverse(gist_gray.colors))
 
 #
@@ -231,11 +239,11 @@ coolwarm_dict = Dict(
         (1.0, 0.150232812, 0.150232812))
         )
 
-coolwarm = make_colorscheme(coolwarm_dict)
+coolwarm = make_colorscheme(coolwarm_dict, notes="blue to white to red")
 
 
 # _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
-# this is blue to white to red
+# this is another blue to white to red
 # _brg_data = ((0.0, 0.0, 1.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0))
 # this is blue to red to green
 
@@ -260,19 +268,23 @@ brg = make_colorscheme(brg_data)
 # def _flag_green(x): return       np.sin( x * 31.5         * np.pi)
 # def _flag_blue(x): return 0.75 * np.sin((x * 31.5 - 0.25) * np.pi) + 0.5
 # _flag_data = {'red': _flag_red, 'green': _flag_green, 'blue': _flag_blue}
-#is apparently what they want
+# they apparently want red->white->blue->black 16 times
 # =>
 
 flag = make_colorscheme(
     (n) -> 0.75 * sin((31.5n + 0.25) * π) + 0.5,
     (n) -> sin(31.5n * π),
-    (n) -> 0.75 * sin((31.5n - 0.25) * π) + 0.5)
+    (n) -> 0.75 * sin((31.5n - 0.25) * π) + 0.5,
+    # length=300 # looks better with more samples, but probably it will be used for continuous sampling
+    )
 
 #
 # def _prism_red(x): return 0.75   * np.sin((x * 20.9 + 0.25) * np.pi) + 0.67
 # def _prism_green(x): return 0.75 * np.sin((x * 20.9 - 0.25) * np.pi) + 0.33
 # def _prism_blue(x): return -1.1  * np.sin((x * 20.9)        * np.pi)
 # _prism_data = {'red': _prism_red, 'green': _prism_green, 'blue': _prism_blue}
+# The (9) colors of the spectrum repeating 11 times...
+# =>
 
 prism = make_colorscheme(
     (n) -> 0.75 * sin((20.9n + 0.25) * π) + 0.67,
@@ -280,13 +292,14 @@ prism = make_colorscheme(
     (n) -> -1.1 * sin(20.9n * π))
 
 #=
-# output to files
+# code to output these colorschemes to files
 
 for cs in (:rainbow, :afmhot, :ocean, :gnuplot, :gnuplot2, :gist_gray, :gist_yarg, :gist_heat, :coolwarm, :bwr, :brg, :flag, :prism)
      colorscheme_to_text(Base.eval(Main, cs), String(cs), "/tmp/$(cs).jl")
  end
 
 # assemble
+# who needs Unix tools...
 open("/tmp/out.jl", "w") do file
      for f in ("/tmp/rainbow.jl",  "/tmp/prism.jl",  "/tmp/flag.jl", "/tmp/brg.jl",  "/tmp/bwr.jl",  "/tmp/coolwarm.jl",  "/tmp/gist_heat.jl", "/tmp/gist_yarg.jl",  "/tmp/gist_gray.jl",  "/tmp/gnuplot2.jl", "/tmp/gnuplot.jl" , "/tmp/ocean.jl",  "/tmp/afmhot.jl")
         write(file, read(f, String))
