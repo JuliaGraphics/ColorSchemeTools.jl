@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Tools",
     "title": "ColorSchemeTools.extract_weighted_colors",
     "category": "function",
-    "text": "/     extractweightedcolors(imfile, n=10, i=10, tolerance=0.01; shrink = 2)\n\nExtract colors and weights of the clusters of colors in an image file. Returns a ColorScheme and weights.\n\nExample:\n\npal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)\n\n\n\n\n\n"
+    "text": "extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2)\n\nExtract colors and weights of the clusters of colors in an image file. Returns a ColorScheme and weights.\n\nExample:\n\npal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)\n\n\n\n\n\n"
 },
 
 {
@@ -165,7 +165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Making colorschemes",
     "title": "ColorSchemeTools.make_colorscheme",
     "category": "function",
-    "text": "make_colorscheme(dict;\n    length=100,\n    category=\"\",\n    notes=\"\")\n\n\n\n\n\nmake_colorscheme(indexedlist;\n    length=100,\n    category=\"\",\n    notes=\"\")\n\nMake a colorscheme using an \'indexed list\' like this:\n\ngist_rainbow = (\n       (0.000, (1.00, 0.00, 0.16)),\n       (0.030, (1.00, 0.00, 0.00)),\n       (0.215, (1.00, 1.00, 0.00)),\n       (0.400, (0.00, 1.00, 0.00)),\n       (0.586, (0.00, 1.00, 1.00)),\n       (0.770, (0.00, 0.00, 1.00)),\n       (0.954, (1.00, 0.00, 1.00)),\n       (1.000, (1.00, 0.00, 0.75))\n)\n\nmake_colorscheme(gist_rainbow)\n\nThe first element of this list of tuples is the point on the color scheme.\n\n\n\n\n\nmake_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;\n        length=100,\n        category=\"\",\n        notes=\"\")\n\nMake a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.\n\n\n\n\n\n"
+    "text": "make_colorscheme(dict;\n    length=100,\n    category=\"\",\n    notes=\"\")\n\nMake a new ColorScheme from a dictionary of linear-segment information. Calls get_linear_segment_color(dict, n) with n for every length value between 0 and 1.\n\n\n\n\n\nmake_colorscheme(indexedlist;\n    length=100,\n    category=\"\",\n    notes=\"\")\n\nMake a colorscheme using an \'indexed list\' like this:\n\ngist_rainbow = (\n       (0.000, (1.00, 0.00, 0.16)),\n       (0.030, (1.00, 0.00, 0.00)),\n       (0.215, (1.00, 1.00, 0.00)),\n       (0.400, (0.00, 1.00, 0.00)),\n       (0.586, (0.00, 1.00, 1.00)),\n       (0.770, (0.00, 0.00, 1.00)),\n       (0.954, (1.00, 0.00, 1.00)),\n       (1.000, (1.00, 0.00, 0.75))\n)\n\nmake_colorscheme(gist_rainbow)\n\nThe first element of this list of tuples is the point on the color scheme.\n\n\n\n\n\nmake_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;\n        length=100,\n        category=\"\",\n        notes=\"\")\n\nMake a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.\n\n\n\n\n\n"
 },
 
 {
