@@ -134,18 +134,21 @@ cdict = Dict(:red   => ((0.0,  0.0,  0.0),
                         (1.0,  1.0,  1.0)))
 ```
 
-The triplets _aren't_ RGB values... For each color, the first number in each tuple gradually increases from 0 to 1, and the second and third determine the color values at that point. The change of color between point `n1` and `n2` is defined by `b` and `c`:
+This specifies that red increases from 0 to 1 over the bottom half, green does
+the same over the middle half, and blue over the top half.
+
+The triplets _aren't_ RGB values... For each color, the first number in each tuple are points on the 0 to 1 scale, and should gradually increase. The second and third values determine the color values at that point. So the change of color between point `p1` and `p2` is defined by `b` and `c`:
 
 ```
 :red => (
          ...,
-         (n1, a, b),
-         (n2, c, d),
+         (p1, a, b),
+         (p2, c, d),
          ...
          )
 ```
 
-If `a and `b` (or `c` and `d`) aren't the same, the color will jump.
+If `a` and `b` (or `c` and `d`) aren't the same, the color will abruptly jump. (Note that the very first `a` and the very last `d` aren't used.)
 
 To create a new ColorScheme from a suitable dictionary in this format, run `make_colorscheme()`.
 
