@@ -30,4 +30,4 @@ jobs:
       after_success: skip
 
 after_success:
-  - julia -e 'import Pkg; cd(Pkg.dir("ColorSchemesTools")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+  - julia -e 'import ColorSchemesTools;  joinpath(dirname(pathof(ColorSchemesTools)), "..", paths...); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
