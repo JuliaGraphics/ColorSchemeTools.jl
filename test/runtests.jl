@@ -47,7 +47,7 @@ function run_all_tests()
     end
 
     @testset "getinverse tests" begin
-        getinverse(colorschemes[:leonardo], RGB(1, 0, 0))
+        getinverse(ColorSchemes.colorschemes[:leonardo], RGB(1, 0, 0))
         getinverse(ColorScheme([Colors.RGB(0,0,0), Colors.RGB(1,1,1)]),  Colors.RGB(.5,.5,.5))
         cs = ColorScheme(range(Colors.RGB(0,0,0), stop=Colors.RGB(1,1,1), length=5))
         gi = getinverse(cs, cs[3])
