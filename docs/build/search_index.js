@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Introduction to ColorSchemeTools",
     "category": "section",
-    "text": "This package provides tools for working with colorschemes and colormaps.For example, you can extract color schemes from images, and replace an image\'s color scheme with another. There are also function for creating ColorSchemes from pre-defined lists or Julia functions.This package relies on:Colors.jl\nColorSchemes.jl\nImages.jl\nClustering.jl"
+    "text": "This package provides tools for working with color schemes - gradients and color maps.You can extract color schemes from images, and replace an image\'s color scheme with another. There are also functions for creating color schemes from pre-defined lists or Julia functions.This package relies on:Colors.jl\nColorSchemes.jl\nImages.jl\nClustering.jland you might need image-capable Julia packages such as ImageMagick.jl or QuartzImageIO.jl installed, depending on the OS."
 },
 
 {
@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Introduction",
     "title": "Installation and basic usage",
     "category": "section",
-    "text": "Install the package as follows:] add ColorSchemeToolsand to use it:using ColorSchemeToolsOriginal version by cormullion."
+    "text": "Install the package as follows:] add ColorSchemeToolsTo use it:using ColorSchemeToolsOriginal version by cormullion."
 },
 
 {
@@ -45,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Tools",
     "title": "Extracting colorschemes from images",
     "category": "section",
-    "text": "You can extract a colorscheme from an image. For example, here\'s an image of a famous painting:(Image: \"the mona lisa\")Use extract() to create a colorscheme from the original image:monalisa = extract(\"monalisa.jpg\", 10, 15, 0.01; shrink=2)which in this example creates a 10-color scheme (using 15 iterations and with a tolerance of 0.01; the image can be reduced in size, here by 2, before processing, to save time).(Image: \"mona lisa extraction\")10-element Array{RGB{Float64},1}:\nRGB{Float64}(0.0406901,0.0412985,0.0423865),\nRGB{Float64}(0.823493,0.611246,0.234261),\nRGB{Float64}(0.374688,0.363066,0.182004),\nRGB{Float64}(0.262235,0.239368,0.110915),\nRGB{Float64}(0.614806,0.428448,0.112495),\nRGB{Float64}(0.139384,0.124466,0.0715472),\nRGB{Float64}(0.627381,0.597513,0.340734),\nRGB{Float64}(0.955276,0.775304,0.37135),\nRGB{Float64}(0.497517,0.4913,0.269587),\nRGB{Float64}(0.880421,0.851357,0.538013),\nRGB{Float64}(0.738879,0.709218,0.441082)](Extracting colorschemes from images requires image importing and exporting abilities. These are platform-specific. On Linux/UNIX, ImageMagick can be used for importing and exporting images. Use QuartzImageIO on macOS.)extract"
+    "text": "You can extract a colorscheme from an image. For example, here\'s an image of a famous painting:(Image: \"the mona lisa\")Use the extract() function to create a color scheme from the original image:using ColorSchemeTools\nmonalisa = extract(\"monalisa.jpg\", 10, 15, 0.01; shrink=2)which in this example creates a 10-color ColorScheme object (using 15 iterations and with a tolerance of 0.01; the image can be reduced in size, here by 2, before processing, to save time).(Image: \"mona lisa extraction\")ColorSchemes.ColorScheme(ColorTypes.RGB{Float64}[\n    RGB{Float64}(0.0406901,0.0412985,0.0423865),\n    RGB{Float64}(0.823493,0.611246,0.234261),\n    RGB{Float64}(0.374688,0.363066,0.182004),\n    RGB{Float64}(0.262235,0.239368,0.110915),\n    RGB{Float64}(0.614806,0.428448,0.112495),\n    RGB{Float64}(0.139384,0.124466,0.0715472),\n    RGB{Float64}(0.627381,0.597513,0.340734),\n    RGB{Float64}(0.955276,0.775304,0.37135),\n    RGB{Float64}(0.497517,0.4913,0.269587),\n    RGB{Float64}(0.880421,0.851357,0.538013),\n    RGB{Float64}(0.738879,0.709218,0.441082)\n    ], \"\", \"\")(Extracting color schemes from images may require you to install image importing and exporting abilities. These are platform-specific. On Linux/UNIX, ImageMagick.jl can be used for importing and exporting images. Use QuartzImageIO.jl on macOS.)extract"
 },
 
 {
@@ -61,7 +61,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Tools",
     "title": "Sorting color schemes",
     "category": "section",
-    "text": "Use sortcolorscheme() to sort a scheme non-destructively in the LUV color space:using ColorSchemes, ColorSchemeTools, Colors\nsortcolorscheme(ColorSchemes.leonardo)\nsortcolorscheme(ColorSchemes.leonardo, rev=true)The default is to sort colors by their LUV luminance value, but you could try specifying the :u or :v LUV fields instead (sorting colors is another problem domain not really addressed in this package...):sortcolorscheme(ColorSchemes.leonardo, :u)sortcolorscheme"
+    "text": "Use sortcolorscheme() to sort a scheme non-destructively in the LUV color space:using ColorSchemes\nsortcolorscheme(ColorSchemes.leonardo)\nsortcolorscheme(ColorSchemes.leonardo, rev=true)The default is to sort colors by their LUV luminance value, but you could try specifying the :u or :v LUV fields instead (sorting colors is another problem domain not really addressed in this package...):sortcolorscheme(ColorSchemes.leonardo, :u)sortcolorscheme"
 },
 
 {
@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Tools",
     "title": "ColorSchemeTools.extract_weighted_colors",
     "category": "function",
-    "text": "/     extractweightedcolors(imfile, n=10, i=10, tolerance=0.01; shrink = 2)\n\nExtract colors and weights of the clusters of colors in an image file. Returns a ColorScheme and weights.\n\nExample:\n\npal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)\n\n\n\n\n\n"
+    "text": "extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2)\n\nExtract colors and weights of the clusters of colors in an image file. Returns a ColorScheme and weights.\n\nExample:\n\npal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)\n\n\n\n\n\n"
 },
 
 {
@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Tools",
     "title": "Weighted colorschemes",
     "category": "section",
-    "text": "Sometimes an image is dominated by some colors with others occurring less frequently. For example, there may be much more brown than yellow in a particular image. A colorscheme derived from this image can reflect this. You can extract both a set of colors and a set of numerical values or weights that indicate the proportions of colors in the image.using Images\ncs, wts = extract_weighted_colors(\"monalisa.jpg\", 10, 15, 0.01; shrink=2)The colorscheme is now in cs, and wts holds the various weights of each color:wts\n10-element Array{Float64,1}:\n0.0521126446851636\n0.20025391828582884\n0.08954703056671294\n0.09603605342678319\n0.09507086696018234\n0.119987526821047\n0.08042973071297582\n0.08863381567908292\n0.08599068966285295\n0.09193772319937041With the colorscheme and the weights, you can make a colorscheme in which the more common colors take up more space in the scheme:len = 50\ncolorscheme_weighted(cs, wts, len)Or in one go:colorscheme_weighted(extract_weighted_colors(\"monalisa.jpg\")...)Compare the weighted and unweighted versions of schemes extracted from the Hokusai image \"The Great Wave\":(Image: \"unweighted\")(Image: \"weighted\")extract_weighted_colors\ncolorscheme_weighted"
+    "text": "Sometimes an image is dominated by some colors with others occurring less frequently. For example, there may be much more brown than yellow in a particular image. A colorscheme derived from this image can reflect this. You can extract both a set of colors and a set of numerical values or weights that indicate the proportions of colors in the image.cs, wts = extract_weighted_colors(\"monalisa.jpg\", 10, 15, 0.01; shrink=2)The ColorScheme is now in cs, and wts holds the various weights of each color:wts\n\n    10-element Array{Float64,1}:\n     0.0521126446851636\n     0.20025391828582884\n     0.08954703056671294\n     0.09603605342678319\n     0.09507086696018234\n     0.119987526821047\n     0.08042973071297582\n     0.08863381567908292\n     0.08599068966285295\n     0.09193772319937041With the ColorScheme and the weights, you can make a new color scheme in which the more common colors take up more space in the scheme:len = 50\ncolorscheme_weighted(cs, wts, len)Or in one go:colorscheme_weighted(extract_weighted_colors(\"monalisa.jpg\" # ...Compare the weighted and unweighted versions of schemes extracted from the Hokusai image \"The Great Wave\":(Image: \"unweighted\")(Image: \"weighted\")extract_weighted_colors\ncolorscheme_weighted"
 },
 
 {
@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Converting image colors",
     "title": "Convert image from one scheme to another",
     "category": "section",
-    "text": "Using getinverse() it\'s possible to convert an image from one colorscheme to another.convert_to_scheme(cscheme, img) returns a new image in which each pixel from the provided image is mapped to its closest matching color in the provided scheme.using FileIO\n# image created in the ColorSchemes documentation\nimg = load(\"ColorSchemeTools/docs/src/assets/figures/heatmap1.png\")(Image: \"heatmap 1\")Here, the original image is converted to use the GnBu_9 scheme.img1 = save(\"/tmp/t.png\", convert_to_scheme(ColorSchemes.GnBu_9, img))(Image: \"heatmap converted\")convert_to_scheme"
+    "text": "Using the ColorSchemes function getinverse() it\'s possible to convert an image using one colorscheme to use another.convert_to_scheme(cscheme, img) returns a new image in which each pixel from the provided image is mapped to its closest matching color in the provided scheme.In the following figure, the Julia logo is converted to use a ColorScheme with no black or white:using FileIO, ColorSchemes, ColorSchemeTools, Images\n\nimg = load(\"julia-logo-square.png\")\nimg_rgb = RGB.(img) # get rid of alpha channel\nconvertedimage = convert_to_scheme(ColorSchemes.PiYG_4, img_rgb)\n\nsave(\"original.png\",  img)\nsave(\"converted.png\", convertedimage)(Image: \"julia logo converted\")convert_to_scheme"
 },
 
 {
@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Making colorschemes",
     "title": "Making new colorschemes",
     "category": "section",
-    "text": "To make new ColorSchemes, you can build arrays of colors—see the ColorSchemes documentation. You can also use ColorSchemeTools function make_colorscheme(), and supply information about the color sequences you want. The following formats are possible:a dictionary of linear segments\nan \'indexed list\' of RGB values\nthree Julia functions that generate values between 0 and 1 for the RGB levels"
+    "text": "To make new ColorSchemes, you can quickly build arrays of colors; refer the ColorSchemes.jl documentation. You can also use the ColorSchemeTools function make_colorscheme(), and supply information about the color sequences you want.The following formats are possible:a dictionary of linear segments\nan \'indexed list\' of RGB values\nthree Julia functions that generate values between 0 and 1 for the RGB levels"
 },
 
 {
@@ -141,7 +141,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Making colorschemes",
     "title": "Linearly-segmented colors",
     "category": "section",
-    "text": "A linearly-segmented color dictionary looks like this:cdict = Dict(:red  => ((0.0,  0.0,  0.0),\n                       (0.5,  1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :green => ((0.0,  0.0,  0.0),\n                       (0.25, 0.0,  0.0),\n                       (0.75, 1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :blue =>  ((0.0,  0.0,  0.0),\n                       (0.5,  0.0,  0.0),\n                       (1.0,  1.0,  1.0)))For each color, the first number in each tuple increases from 0 to 1, and the second and third determine the color values. (TODO - how exactly?)To create a new ColorScheme from a suitable dictionary, call make_colorscheme().using Colors, ColorSchemes\nscheme = make_colorscheme(dict)By plotting the color components separately it\'s possible to see how the curves change. This diagram shows both the defined color levels as swatches along the top, and a continuously-sampled image below:cdict = Dict(:red  => ((0.0,  0.0,  0.0),\n                       (0.5,  1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :green => ((0.0,  0.0,  0.0),\n                       (0.25, 0.0,  0.0),\n                       (0.75, 1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :blue =>  ((0.0,  0.0,  0.0),\n                       (0.5,  0.0,  0.0),\n                       (1.0,  1.0,  1.0))) # hide\nscheme = make_colorscheme(cdict)\ndraw_rgb_levels(scheme, 800, 200, \"assets/figures/curves.svg\") # hide\nnothing # hide(Image: \"showing linear segmented colorscheme\")If you want to save an image of a ColorScheme, use colorscheme_to_image():using ColorSchemes, ColorSchemeTools, FileIO\nimg = colorscheme_to_image(ColorScheme(scheme), 450, 60)\nsave(\"/tmp/linseg.png\", img)"
+    "text": "A linearly-segmented color dictionary looks like this:cdict = Dict(:red   => ((0.0,  0.0,  0.0),\n                        (0.5,  1.0,  1.0),\n                        (1.0,  1.0,  1.0)),\n             :green => ((0.0,  0.0,  0.0),\n                        (0.25, 0.0,  0.0),\n                        (0.75, 1.0,  1.0),\n                        (1.0,  1.0,  1.0)),\n             :blue  => ((0.0,  0.0,  0.0),\n                        (0.5,  0.0,  0.0),\n                        (1.0,  1.0,  1.0)))This specifies that red increases from 0 to 1 over the bottom half, green does the same over the middle half, and blue over the top half.The triplets aren\'t RGB values... For each channel, the first number in each tuple are points on the 0 to 1 brightness scale, and should gradually increase. The second and third values determine the intensity values at that point.The change of color between point p1 and p2 is defined by b and c::red => (\n         ...,\n         (p1, a, b),\n         (p2, c, d),\n         ...\n         )If a and b (or c and d) aren\'t the same, the color will abruptly jump. Notice that the very first a and the very last d aren\'t used.To create a new ColorScheme from a suitable dictionary in this format, run make_colorscheme().using Colors, ColorSchemes\nscheme = make_colorscheme(dict)By plotting the color components separately it\'s possible to see how the curves change. This diagram shows both the defined color levels as swatches along the top, and a continuously-sampled image below:cdict = Dict(:red  => ((0.0,  0.0,  0.0),\n                       (0.5,  1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :green => ((0.0,  0.0,  0.0),\n                       (0.25, 0.0,  0.0),\n                       (0.75, 1.0,  1.0),\n                       (1.0,  1.0,  1.0)),\n            :blue =>  ((0.0,  0.0,  0.0),\n                       (0.5,  0.0,  0.0),\n                       (1.0,  1.0,  1.0))) # hide\nscheme = make_colorscheme(cdict)\ndraw_rgb_levels(scheme, 800, 200, \"assets/figures/curves.svg\") # hide\nnothing # hide(Image: \"showing linear segmented colorscheme\")"
 },
 
 {
@@ -161,6 +161,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "makingschemes.html#ColorSchemeTools.make_colorscheme",
+    "page": "Making colorschemes",
+    "title": "ColorSchemeTools.make_colorscheme",
+    "category": "function",
+    "text": "make_colorscheme(dict;\n    length=100,\n    category=\"\",\n    notes=\"\")\n\nMake a new ColorScheme from a dictionary of linear-segment information. Calls get_linear_segment_color(dict, n) with n for every length value between 0 and 1.\n\n\n\n\n\nmake_colorscheme(indexedlist;\n    length=100,\n    category=\"\",\n    notes=\"\")\n\nMake a colorscheme using an \'indexed list\' like this:\n\ngist_rainbow = (\n       (0.000, (1.00, 0.00, 0.16)),\n       (0.030, (1.00, 0.00, 0.00)),\n       (0.215, (1.00, 1.00, 0.00)),\n       (0.400, (0.00, 1.00, 0.00)),\n       (0.586, (0.00, 1.00, 1.00)),\n       (0.770, (0.00, 0.00, 1.00)),\n       (0.954, (1.00, 0.00, 1.00)),\n       (1.000, (1.00, 0.00, 0.75))\n)\n\nmake_colorscheme(gist_rainbow)\n\nThe first element of this list of tuples is the point on the color scheme.\n\n\n\n\n\nmake_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;\n        length=100,\n        category=\"\",\n        notes=\"\")\n\nMake a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.\n\n\n\n\n\n"
+},
+
+{
     "location": "makingschemes.html#ColorSchemeTools.get_linear_segment_color",
     "page": "Making colorschemes",
     "title": "ColorSchemeTools.get_linear_segment_color",
@@ -169,19 +177,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "makingschemes.html#ColorSchemeTools.make_colorscheme",
-    "page": "Making colorschemes",
-    "title": "ColorSchemeTools.make_colorscheme",
-    "category": "function",
-    "text": "make_colorscheme(dict;\n    length=100)\n\n\n\n\n\nmake_colorscheme(indexedlist, name::Symbol;\n    length=100)\n\nMake a colorscheme using an \'indexed list\' like this:\n\ngist_rainbow = (\n       (0.000, (1.00, 0.00, 0.16)),\n       (0.030, (1.00, 0.00, 0.00)),\n       (0.215, (1.00, 1.00, 0.00)),\n       (0.400, (0.00, 1.00, 0.00)),\n       (0.586, (0.00, 1.00, 1.00)),\n       (0.770, (0.00, 0.00, 1.00)),\n       (0.954, (1.00, 0.00, 1.00)),\n       (1.000, (1.00, 0.00, 0.75))\n)\n\nmake_colorscheme(gist_rainbow)\n\nThe first element of this list of tuples is the point on the color scheme.\n\n\n\n\n\nmake_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;\n        length=100)\n\nMake a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.\n\n\n\n\n\n"
-},
-
-{
     "location": "makingschemes.html#Examples-1",
     "page": "Making colorschemes",
     "title": "Examples",
     "category": "section",
-    "text": "The first example returns a smooth black to white gradient, because the identity() function gives back as good as it gets.fscheme = make_colorscheme(identity, identity, identity)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme1.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")The next example uses the sin() function on values from 0 to π to control the red, and the cos() function from 0 to π to control the blue. The green channel is flat-lined.fscheme = make_colorscheme((n) -> sin(n*π), (n) -> 0, (n) -> cos(n*π))\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme2.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")You can generate stepped gradients by controlling the numbers. Here, each point on the scheme is nudged to the nearest multiple of 0.1.fscheme = make_colorscheme(\n        (n) -> round(n, digits=1),\n        (n) -> round(n, digits=1),\n        (n) -> round(n, digits=1), length=10)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme3.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")The next example sends the red channel from black to red and back again.fscheme = make_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme4.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")The final example produces a stripey colorscheme as the rippling sine waves continually change phase:ripple7(n)  = sin(π * 7n)\nripple13(n) = sin(π * 13n)\nripple17(n) = sin(π * 17n)\nfscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme5.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")get_linear_segment_color\nmake_colorscheme"
+    "text": "The first example returns a smooth black to white gradient, because the identity() function gives back as good as it gets.fscheme = make_colorscheme(identity, identity, identity)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme1.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")The next example uses the sin() function on values from 0 to π to control the red, and the cos() function from 0 to π to control the blue. The green channel is flat-lined.fscheme = make_colorscheme((n) -> sin(n*π), (n) -> 0, (n) -> cos(n*π))\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme2.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")You can generate stepped gradients by controlling the numbers. Here, each point on the scheme is nudged to the nearest multiple of 0.1.fscheme = make_colorscheme(\n        (n) -> round(n, digits=1),\n        (n) -> round(n, digits=1),\n        (n) -> round(n, digits=1), length=10)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme3.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")The next example sinusoidally sends the red channel from black to red and back again.fscheme = make_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme4.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")The final example produces a striped colorscheme as the rippling sine waves continually change phase:ripple7(n)  = sin(π * 7n)\nripple13(n) = sin(π * 13n)\nripple17(n) = sin(π * 17n)\nfscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)\ndraw_rgb_levels(fscheme, 800, 200, \"assets/figures/funcscheme5.svg\") # hide\nnothing # hide(Image: \"functional color schemes\")make_colorscheme\nget_linear_segment_color"
 },
 
 {
@@ -221,7 +221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Saving colorschemes",
     "title": "Saving colorschemes as images",
     "category": "section",
-    "text": "Sometimes you want to save a colorscheme, which is usually just a pixel thick, as a swatch or image. You can do this with colorscheme_to_image(). The second argument is the number of repetitions of each color in the row, the third is the total number of rows. The function returns an image which you can save using FileIO\'s save():using FileIO, ColorSchemeTools, Images, Colors\n\nimg = colorscheme_to_image(ColorSchemes.vermeer, 150, 20)\nsave(\"/tmp/cs_vermeer-150-20.png\", img)(Image: \"vermeer swatch\")The image_to_swatch() function extracts a colorscheme from the image in and saves it as a swatch in a PNG.image_to_swatch(\"/tmp/input.png\", 10, \"/tmp/output.png\")colorscheme_to_image\nimage_to_swatch"
+    "text": "Sometimes you want to save a colorscheme, which is usually just a pixel thick, as a swatch or image. You can do this with colorscheme_to_image(). The second argument is the number of rows. The third argument is the number of times each pixel is repeated in the row. The function returns an image which you can save using FileIO\'s save():using FileIO, ColorSchemeTools, Images, Colors\n\n# 20 pixels for each color, 150 rows\nimg = colorscheme_to_image(ColorSchemes.vermeer, 150, 20)\n\nsave(\"/tmp/cs_vermeer-150-20.png\", img)(Image: \"vermeer swatch\")The image_to_swatch() function (a shortcut) extracts a n-color scheme from the image and saves it as a swatch in a PNG.image_to_swatch(\"/tmp/input.png\", 10, \"/tmp/output.png\")colorscheme_to_image\nimage_to_swatch"
 },
 
 {
@@ -237,7 +237,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Saving colorschemes",
     "title": "Saving colorschemes to text files",
     "category": "section",
-    "text": "You can save a colorscheme as a text file with the imaginatively-titled colorscheme_to_text() function.Remember to make the name a Julia-friendly one, because it will become a symbol and a dictionary key.colorscheme_to_text(ColorSchemes.vermeer,\n        \"the_lost_vermeer\",           # name\n        \"/tmp/the_lost_vermeer.jl\",   # filename\n        category=\"dutch painters\",    # category\n        notes=\"it\'s not really lost\"  # notes\n        )Of course, if you just want the color definitions, you can simply type:map(println, ColorSchemes.vermeer.colors);colorscheme_to_text"
+    "text": "You can save a ColorScheme as a (Julia) text file with the imaginatively-titled colorscheme_to_text() function.Remember to make the name a Julia-friendly one, because it may eventually become a symbol and a dictionary key if the Julia file is include-d.colorscheme_to_text(ColorSchemes.vermeer,\n        \"the_lost_vermeer\",           # name\n        \"/tmp/the_lost_vermeer.jl\",   # filename\n        category=\"dutch painters\",    # category\n        notes=\"it\'s not really lost\"  # notes\n        )Of course, if you just want the color definitions, you can simply type:map(println, ColorSchemes.vermeer.colors);colorscheme_to_text"
 },
 
 {

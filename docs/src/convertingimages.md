@@ -2,25 +2,24 @@
 
 ## Convert image from one scheme to another
 
-Using `getinverse()` it's possible to convert an image from one colorscheme to another.
+Using the ColorSchemes function `getinverse()` it's possible to convert an image using one colorscheme to use another.
 
 `convert_to_scheme(cscheme, img)` returns a new image in which each pixel from the provided image is mapped to its closest matching color in the provided scheme.
 
-```
-using FileIO
-# image created in the ColorSchemes documentation
-img = load("ColorSchemeTools/docs/src/assets/figures/heatmap1.png")
-```
-
-!["heatmap 1"](assets/figures/heatmap1.png)
-
-Here, the original image is converted to use the `GnBu_9` scheme.
+In the following figure, the Julia logo is converted to use a ColorScheme with no black or white:
 
 ```
-img1 = save("/tmp/t.png", convert_to_scheme(ColorSchemes.GnBu_9, img))
+using FileIO, ColorSchemes, ColorSchemeTools, Images
+
+img = load("julia-logo-square.png")
+img_rgb = RGB.(img) # get rid of alpha channel
+convertedimage = convert_to_scheme(ColorSchemes.PiYG_4, img_rgb)
+
+save("original.png",  img)
+save("converted.png", convertedimage)
 ```
 
-!["heatmap converted"](assets/figures/heatmapconverted.png)
+!["julia logo converted"](assets/figures/logosconverted.png)
 
 ```@docs
 convert_to_scheme

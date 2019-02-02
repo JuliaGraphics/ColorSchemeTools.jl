@@ -111,7 +111,9 @@ end
 
 # Making new colorschemes
 
-To make new ColorSchemes, you can build arrays of colors—see the ColorSchemes.jl documentation. You can also use the ColorSchemeTools function `make_colorscheme()`, and supply information about the color sequences you want. The following formats are possible:
+To make new ColorSchemes, you can quickly build arrays of colors; refer the ColorSchemes.jl documentation. You can also use the ColorSchemeTools function `make_colorscheme()`, and supply information about the color sequences you want.
+
+The following formats are possible:
 
 - a dictionary of linear segments
 - an 'indexed list' of RGB values
@@ -134,10 +136,11 @@ cdict = Dict(:red   => ((0.0,  0.0,  0.0),
                         (1.0,  1.0,  1.0)))
 ```
 
-This specifies that red increases from 0 to 1 over the bottom half, green does
-the same over the middle half, and blue over the top half.
+This specifies that red increases from 0 to 1 over the bottom half, green does the same over the middle half, and blue over the top half.
 
-The triplets _aren't_ RGB values... For each color, the first number in each tuple are points on the 0 to 1 scale, and should gradually increase. The second and third values determine the color values at that point. So the change of color between point `p1` and `p2` is defined by `b` and `c`:
+The triplets _aren't_ RGB values... For each channel, the first number in each tuple are points on the 0 to 1 brightness scale, and should gradually increase. The second and third values determine the intensity values at that point.
+
+The change of color between point `p1` and `p2` is defined by `b` and `c`:
 
 ```
 :red => (
@@ -148,7 +151,7 @@ The triplets _aren't_ RGB values... For each color, the first number in each tup
          )
 ```
 
-If `a` and `b` (or `c` and `d`) aren't the same, the color will abruptly jump. (Note that the very first `a` and the very last `d` aren't used.)
+If `a` and `b` (or `c` and `d`) aren't the same, the color will abruptly jump. Notice that the very first `a` and the very last `d` aren't used.
 
 To create a new ColorScheme from a suitable dictionary in this format, run `make_colorscheme()`.
 
@@ -176,14 +179,6 @@ nothing # hide
 ```
 
 !["showing linear segmented colorscheme"](assets/figures/curves.svg)
-
-If you want to save an image of a ColorScheme, use `colorscheme_to_image()`:
-
-```
-using ColorSchemes, ColorSchemeTools, FileIO
-img = colorscheme_to_image(ColorScheme(scheme), 450, 60)
-save("/tmp/linseg.png", img)
-```
 
 ## Indexed-list color schemes
 
@@ -261,7 +256,7 @@ nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme3.svg)
 
-The next example sends the red channel from black to red and back again.
+The next example sinusoidally sends the red channel from black to red and back again.
 
 ```@example drawscheme
 fscheme = make_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)
@@ -270,7 +265,7 @@ nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme4.svg)
 
-The final example produces a stripey colorscheme as the rippling sine waves continually change phase:
+The final example produces a striped colorscheme as the rippling sine waves continually change phase:
 
 ```@example drawscheme
 ripple7(n)  = sin(π * 7n)

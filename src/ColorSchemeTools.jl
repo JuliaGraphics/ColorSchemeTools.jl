@@ -54,7 +54,7 @@ pal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)
 """
 function extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2.0)
     img = load(imfile)
-    # TODO this is wrong, isn't it?
+    # TODO this is the wrong to do errors
     (!@isdefined img) && error("Can't load the image file \"$imfile\"")
     w, h = size(img)
     neww = round(Int, w/shrink)
@@ -62,6 +62,9 @@ function extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2.
     smaller_image = Images.imresize(img, (neww, newh))
     w, h = size(smaller_image)
     imdata = convert(Array{Float64}, channelview(smaller_image))
+
+    !any(n -> n == 3, size(imdata)) && error("Image file \"$imfile\" doesn't have three color channels; perhaps it has an alpha channel as well?")
+
     d = reshape(imdata, 3, :)
     R = kmeans(d, n, maxiter=i, tol=tolerance)
     cols = RGB{Float64}[]
@@ -74,7 +77,7 @@ end
 """
     colorscheme_weighted(colorscheme, weights, length)
 
-Returns a new colorscheme of length `length` (default 50) where the proportion
+Returns a new ColorScheme of length `length` (default 50) where the proportion
 of each color in `colorscheme` is represented by the associated weight of each
 entry.
 
@@ -140,7 +143,7 @@ end
 """
     convert_to_scheme(cscheme, img)
 
-Converts img from its current color values to use only the colors defined in cscheme.
+Converts `img` from its current color values to use only the colors defined in the ColorScheme `cscheme`.
 
 ```
 image = nonTransparentImg
@@ -154,7 +157,7 @@ convert_to_scheme(cscheme::ColorScheme,img) =
 """
     colorscheme_to_image(cs, nrows=50, tilewidth=5)
 
-Make an image from a colorscheme by repeating the colors in a colorscheme.
+Make an image from a ColorScheme by repeating the colors in `nrows` rows, repeating each pixel `tilewidth` times.
 
 Returns the image as an array.
 
@@ -181,9 +184,11 @@ function colorscheme_to_image(cs::ColorScheme, nrows=50, tilewidth=5)
 end
 
 """
-    image_to_swatch(imagefilepath, samples, destinationpath; nrows=50, tilewidth=5)
+    image_to_swatch(imagefilepath, samples, destinationpath;
+        nrows=50,
+        tilewidth=5)
 
-Extract a colorscheme from the image in `imagefilepath` to a swatch image PNG in
+Extract a ColorsSheme from the image in `imagefilepath` to a swatch image PNG in
 `destinationpath`. This just runs `sortcolorscheme()`, `colorscheme_to_image()`,
 and `save()` in sequence.
 
@@ -194,7 +199,9 @@ many times each color is repeated.
 image_to_swatch("monalisa.jpg", 10, "/tmp/monalisaswatch.png")
 ```
 """
-function image_to_swatch(imagefilepath, n::Int64, destinationpath; nrows=50, tilewidth=5)
+function image_to_swatch(imagefilepath, n::Int64, destinationpath;
+    nrows=50,
+    tilewidth=5)
     tempcs = sortcolorscheme(extract(imagefilepath, n))
     img = colorscheme_to_image(tempcs, nrows, tilewidth)
     save(destinationpath, img)
@@ -206,7 +213,7 @@ end
         notes="it's not really lost" # notes
     )
 
-Write a colorscheme to a Julia text file.
+Write a ColorScheme to a Julia text file.
 
 ## Example
 
@@ -242,8 +249,8 @@ end
 
 Get the RGB color for value `n` from a dictionary of linear color segments.
 
-A dictionary where red increases from 0 to 1 over the bottom half, green does
-the same over the middle half, and blue over the top half, looks like this:
+This following is a dictionary where red increases from 0 to 1 over the bottom
+half, green does the same over the middle half, and blue over the top half:
 
 ```
 cdict = Dict(:red  => ((0.0,  0.0,  0.0),
@@ -354,7 +361,7 @@ gist_rainbow = (
     )
 ```
 
-To make a colorscheme, use:
+To make a ColorScheme from this type of list, use:
 
 ```
 make_colorscheme(gist_rainbow)
@@ -382,7 +389,7 @@ end
         category="",
         notes="")
 
-Make a colorscheme using an 'indexed list' like this:
+Make a ColorScheme using an 'indexed list' like this:
 
 ```
 gist_rainbow = (
@@ -399,7 +406,7 @@ gist_rainbow = (
 make_colorscheme(gist_rainbow)
 ```
 
-The first element of this list of tuples is the point on the color scheme.
+The first element of each item is the point on the color scheme.
 """
 function make_colorscheme(indexedlist::Tuple;
         length=100,
@@ -417,13 +424,13 @@ end
             category="",
             notes="")
 
-Make a colorscheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the colorscheme.
+Make a ColorScheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the ColorScheme.
 
 """
 function make_colorscheme(redf::Function, greenf::Function, bluef::Function;
         length=100,
         category="",
-        notes="functional colorscheme")
+        notes="functional ColorScheme")
     cs = RGB[]
     for i in range(0, stop=1, length=length)
         r, g, b = redf(i), greenf(i), bluef(i)

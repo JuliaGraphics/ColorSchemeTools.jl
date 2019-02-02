@@ -1,8 +1,8 @@
 # Introduction to ColorSchemeTools
 
-This package provides tools for working with colorschemes and colormaps.
+This package provides tools for working with color schemes - gradients and color maps.
 
-You can extract color schemes from images, and replace an image's color scheme with another. There are also function for creating ColorSchemes from pre-defined lists or Julia functions.
+You can extract color schemes from images, and replace an image's color scheme with another. There are also functions for creating color schemes from pre-defined lists or Julia functions.
 
 This package relies on:
 
@@ -11,7 +11,7 @@ This package relies on:
 - [Images.jl](https://github.com/JuliaImages/Images.jl)
 - [Clustering.jl](https://github.com/JuliaStats/Clustering.jl)
 
-and you might need image-capable software installed, such as ImageMagick.jl or QuartzImageIO.
+and you might need image-capable Julia packages such as ImageMagick.jl or QuartzImageIO.jl installed, depending on the OS.
 
 ## Installation and basic usage
 
