@@ -30,4 +30,4 @@ jobs:
       after_success: skip
 
 after_success:
-  - julia -e 'if VERSION >= v"0.7.0-" using Pkg end ; Pkg.add("ColorSchemeTools"); import ColorSchemeTools;  cd(joinpath(dirname(pathof(ColorSchemeTools)), "..")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
+  - julia -e 'if VERSION >= v"0.7.0-" using Pkg end ; Pkg.add("ColorSchemeTools"); import ColorSchemeTools;  cd(joinpath(dirname(pathof(ColorSchemeTools)), "..")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())';
