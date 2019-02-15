@@ -238,7 +238,7 @@ nothing # hide
 The next example uses the `sin()` function on values from 0 to π to control the red, and the `cos()` function from 0 to π to control the blue. The green channel is flat-lined.
 
 ```@example drawscheme
-fscheme = make_colorscheme((n) -> sin(n*π), (n) -> 0, (n) -> cos(n*π))
+fscheme = make_colorscheme(n -> sin(n*π), n -> 0, n -> cos(n*π))
 draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme2.svg") # hide
 nothing # hide
 ```
@@ -248,9 +248,9 @@ You can generate stepped gradients by controlling the numbers. Here, each point 
 
 ```@example drawscheme
 fscheme = make_colorscheme(
-        (n) -> round(n, digits=1),
-        (n) -> round(n, digits=1),
-        (n) -> round(n, digits=1), length=10)
+        n -> round(n, digits=1),
+        n -> round(n, digits=1),
+        n -> round(n, digits=1), length=10)
 draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme3.svg") # hide
 nothing # hide
 ```
@@ -259,13 +259,13 @@ nothing # hide
 The next example sinusoidally sends the red channel from black to red and back again.
 
 ```@example drawscheme
-fscheme = make_colorscheme(n -> sin(n * π), (n) -> 0, (n) -> 0)
+fscheme = make_colorscheme(n -> sin(n * π), n -> 0, n -> 0)
 draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme4.svg") # hide
 nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme4.svg)
 
-The final example produces a striped colorscheme as the rippling sine waves continually change phase:
+The next example produces a striped colorscheme as the rippling sine waves continually change phase:
 
 ```@example drawscheme
 ripple7(n)  = sin(π * 7n)
@@ -276,6 +276,22 @@ draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme5.svg") # hide
 nothing # hide
 ```
 !["functional color schemes"](assets/figures/funcscheme5.svg)
+
+If you're creating a scheme by generating LCHab colors, your functions should convert values between 0 and 1 to values between 0 and 100 (luminance and chroma) or 0 to 360 (hue).
+
+```@example drawscheme
+
+f1(n) = 180 + 180sin(2π * n)
+f2(n) = 50 + 20(0.5 - abs(n - 0.5))
+fscheme = make_colorscheme(n -> 50, f2, f1,
+    length=80,
+    model=:LCHab)
+draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme6.svg") # hide
+nothing # hide
+```
+
+!["functional color schemes"](assets/figures/funcscheme6.svg)
+
 
 ```@docs
 make_colorscheme

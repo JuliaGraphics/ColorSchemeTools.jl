@@ -1,5 +1,21 @@
 # Changelog
 
+## [v0.1.0] - minor changes - 2019-02-15
+
+### Added
+
+### Changed
+
+- makecolor_scheme uses color models
+
+### Removed
+
+-
+
+### Deprecated
+
+-
+
 ## [v0.0.1] - first release - 2019-01-24
 
 ### Added

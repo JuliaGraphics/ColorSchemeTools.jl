@@ -305,25 +305,6 @@ function get_linear_segment_color(dict, n)
 end
 
 """
-    make_colorscheme(dict;
-        length=100,
-        category="",
-        notes="")
-
-Make a new ColorScheme from a dictionary of linear-segment information. Calls
-`get_linear_segment_color(dict, n)` with `n` for every `length` value between 0 and 1.
-"""
-function make_colorscheme(dict::Dict;
-        length=100,
-        category="",
-        notes="")
-    cs = ColorScheme([RGB(get_linear_segment_color(dict, i)...)
-        for i in range(0, stop=1, length=length)],
-        category, notes)
-    return cs
-end
-
-"""
     lerp((x, from_min, from_max, to_min=0.0, to_max=1.0)
 
 Linear interpolation of `x` between `from_min` and `from_max`.
@@ -384,6 +365,25 @@ function get_indexed_list_color(indexedlist, n)
 end
 
 """
+    make_colorscheme(dict;
+        length=100,
+        category="",
+        notes="")
+
+Make a new ColorScheme from a dictionary of linear-segment information. Calls
+`get_linear_segment_color(dict, n)` with `n` for every `length` value between 0 and 1.
+"""
+function make_colorscheme(dict::Dict;
+        length=100,
+        category="",
+        notes="")
+    cs = ColorScheme([RGB(get_linear_segment_color(dict, i)...)
+        for i in range(0, stop=1, length=length)],
+        category, notes)
+    return cs
+end
+
+"""
     make_colorscheme(indexedlist;
         length=100,
         category="",
@@ -419,23 +419,68 @@ function make_colorscheme(indexedlist::Tuple;
 end
 
 """
-    make_colorscheme(redfunction::Function, greenfunction::Function, bluefunction::Function;
-            length=100,
-            category="",
-            notes="")
+    make_colorscheme_new(f1::Function, f2::Function, f3::Function;
+        model    = :RGB,
+        length   = 100,
+        category = "",
+        notes    = "functional ColorScheme")
 
-Make a ColorScheme using functions. Each function should return a value between 0 and 1 for that color component at each point on the ColorScheme.
+Make a ColorScheme using functions. Each function should take a value between 0
+and 1 and return for that color component at each point on the ColorScheme,
+depending on the color model.
 
+The default color model is `:RGB`, and the functions should return values in the
+appropriate range:
+
+- f1 - [0.0 - 1.0]   - red
+- f2 - [0.0 - 1.0]   - green
+- f3 - [0.0 - 1.0]   - blue
+
+For the `:HSV` color model:
+
+- f1 - [0.0 - 360.0] - hue
+- f2 - [0.0 - 1.0]   - saturataion
+- f3 - [0.0 - 1.0]   - value (brightness)
+
+For the `:LCHab` color model:
+
+- f1 - [0.0 - 100.0] - luminance
+- f2 - [0.0 - 100.0] - chroma
+- f3 - [0.0 - 360.0] - hue
 """
-function make_colorscheme(redf::Function, greenf::Function, bluef::Function;
-        length=100,
-        category="",
-        notes="functional ColorScheme")
+function make_colorscheme(f1::Function, f2::Function, f3::Function;
+        model    = :RGB,
+        length   = 100,
+        category = "",
+        notes    = "functional ColorScheme")
+    # output is always RGB for the moment
     cs = RGB[]
-    for i in range(0, stop=1, length=length)
-        r, g, b = redf(i), greenf(i), bluef(i)
-        r, g, b = clamp!([r, g, b], 0.0, 1.0)
-        push!(cs, RGB(r, g, b))
+    if model == :LCHab
+        clamp1 = (0.0, 100.0) #
+        clamp2 = (0.0, 100.0) #
+        clamp3 = (0.0, 360.0) # Hue is 0-360
+    elseif model == :HSV
+        clamp1 = (0.0, 360.0) # Hue is 0-360
+        clamp2 = (0.0, 1.0) #
+        clamp3 = (0.0, 1.0) #
+    elseif model == :RGB
+        clamp1 = (0.0, 1.0) #
+        clamp2 = (0.0, 1.0) #
+        clamp3 = (0.0, 1.0) #
+    end
+    counter = 0
+    for i in range(0.0, stop=1.0, length=length)
+        raw1, raw2, raw3 = f1(i), f2(i), f3(i)
+        final1           = clamp(raw1, clamp1...)
+        final2           = clamp(raw2, clamp2...)
+        final3           = clamp(raw3, clamp3...)
+        if model == :LCHab
+            push!(cs, convert(RGB, LCHab(final1, final2, final3)))
+        elseif model == :RGB
+            push!(cs, RGB(final1, final2, final3))
+        elseif model == :HSV
+            push!(cs, convert(RGB, HSV(final1, final2, final3)))
+        end
     end
     return ColorScheme(cs, category, notes)
 end
