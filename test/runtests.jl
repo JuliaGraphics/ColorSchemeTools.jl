@@ -1,4 +1,5 @@
-using Test, ColorSchemes, ColorSchemeTools, FileIO, QuartzImageIO, Colors
+using Test, ColorSchemes, ColorSchemeTools, FileIO, Colors
+using ImageMagick, QuartzImageIO
 
 function run_all_tests()
 
