@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.0.0] - 2020-03-09
+
+### Added
+
+### Changed
+
+- extract() modified to use wcounts()
+
+### Removed
+
+### Deprecated
+
 ## [v0.2.0] - 2019-06-01
 
 ### Added

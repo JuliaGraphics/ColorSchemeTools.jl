@@ -1,4 +1,4 @@
-using Test, ColorSchemes, ColorSchemeTools, FileIO, Colors
+using Test, ColorSchemes, ColorSchemeTools, FileIO, QuartzImageIO, Colors
 
 function run_all_tests()
 
@@ -83,7 +83,6 @@ function run_all_tests()
 end
 
 function run_minimum_tests()
-
     @testset "basic minimum tests" begin
         # load scheme
         hok = ColorSchemes.hokusai

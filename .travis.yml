@@ -7,11 +7,14 @@ os:
 
 julia:
   - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
   - nightly
 
-matrix:
-  allow_failures:
-    - julia: nightly
+cache:
+  directories:
+  - $HOME/.julia/artifacts
 
 env:
   global:
@@ -20,13 +23,13 @@ env:
 jobs:
   include:
     - stage: "Documentation"
-      julia: 1.0
+      julia: 1.3
       os: osx
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.instantiate();
                                     Pkg.add(PackageSpec(path=pwd()))'
-        - julia --project=docs/ docs/make.jl
+        - julia --project=docs/ --color=yes docs/make.jl
       after_success: skip
 
 after_success:
-  - julia -e 'if VERSION >= v"1.0.0" using Pkg end ; Pkg.add("ColorSchemeTools"); import ColorSchemeTools;  cd(joinpath(dirname(pathof(ColorSchemeTools)), "..")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())';
+  - julia -e 'import Pkg; cd(Pkg.dir("ColorSchemeTools")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'

@@ -13,6 +13,9 @@ matrix:
  allow_failures:
  - julia_version: latest
 
+cache:
+  - '%USERPROFILE%\.julia\artifacts'
+
 branches:
   only:
     - master

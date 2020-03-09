@@ -8,7 +8,7 @@ This package provides some tools for working with ColorSchemes:
 """
 module ColorSchemeTools
 
-using Images, ColorSchemes, Colors, Clustering, FileIO, Dates
+using Images, ColorSchemes, Colors, Clustering, FileIO
 
 import Base.get
 
@@ -54,7 +54,7 @@ pal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)
 """
 function extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2.0)
     img = load(imfile)
-    # TODO this is the wrong to do errors
+    # TODO this is the wrong way to do errors I'm told
     (!@isdefined img) && error("Can't load the image file \"$imfile\"")
     w, h = size(img)
     neww = round(Int, w/shrink)
@@ -71,7 +71,8 @@ function extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink = 2.
     for i in 1:3:length(R.centers)
         push!(cols, RGB(R.centers[i], R.centers[i+1], R.centers[i+2]))
     end
-    return ColorScheme(cols), R.cweights/sum(R.cweights)
+    # KmeansResult::cweights is deprecated, use wcounts(clu::KmeansResult) as of Clustering v0.13.2
+    return ColorScheme(cols), wcounts(R)/sum(wcounts(R))
 end
 
 """

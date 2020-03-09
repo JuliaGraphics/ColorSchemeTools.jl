@@ -65,7 +65,7 @@ sortcolorscheme
 
 ## Weighted colorschemes
 
-Sometimes an image is dominated by some colors with others occurring less frequently. For example, there may be much more brown than yellow in a particular image. A colorscheme derived from this image can reflect this. You can extract both a set of colors and a set of numerical values or weights that indicate the proportions of colors in the image.
+Sometimes an image is dominated by some colors with others occurring less frequently. For example, there may be much more brown than yellow in a particular image. A *weighted* colorscheme derived from this image can reflect this. You can extract both a set of colors and a set of numerical values or weights that indicate the relative proportions of colors in the image.
 
 ```
 cs, wts = extract_weighted_colors("monalisa.jpg", 10, 15, 0.01; shrink=2)
