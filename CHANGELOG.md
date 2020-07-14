@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.1.0] - 2020-07-14
+
+### Added
+
+### Changed
+
+- Project.toml versions
+
+### Removed
+
+### Deprecated
+
 ## [v1.0.0] - 2020-03-09
 
 ### Added
