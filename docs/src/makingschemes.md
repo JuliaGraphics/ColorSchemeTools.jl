@@ -3,9 +3,10 @@ using Luxor, Colors, ColorSchemes, ColorSchemeTools
 function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-levels.svg")
     # This function is a quick hack to draw swatches and curves in a documenter pass.
     # The diagrams are merely illustrative, not 100% technically precise :(
+
     Drawing(w, h, filename)
     origin()
-    background("white")
+    background("black")
     setlinejoin("bevel")
     # three rows (thin, fat, thin), one wide column
     table = Table([h/6, 2h/3, h/6], w)
@@ -21,17 +22,17 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         # horizontal lines
         div10 = boxheight(bbox)/10
         for (ylabel, yy) in enumerate(boxtopcenter(bbox).y:div10:boxbottomcenter(bbox).y)
-            sethue("grey85")
+            sethue("grey25")
             rule(Point(0, yy), boundingbox=bbox)
-            sethue("grey55")
+            sethue("grey85")
             text(string((11 - ylabel)/10), Point(boxbottomleft(bbox).x - 10, yy), halign=:right, valign=:middle)
         end
         # vertical lines
         div10 = boxwidth(bbox)/10
         for (xlabel, xx) in enumerate(boxtopleft(bbox).x:div10:boxtopright(bbox).x)
-            sethue("grey85")
+            sethue("grey25")
             rule(Point(xx, 0), π/2, boundingbox=bbox)
-            sethue("grey55")
+            sethue("grey85")
             text(string((xlabel - 1)/10), Point(xx, boxbottomleft(bbox).y + 10), halign=:center, valign=:bottom)
         end        
     end
@@ -69,6 +70,7 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         sethue("green")
         poly(greenline, :stroke)
     end
+
     # top tile, swatches
     @layer begin
         translate(table[1])
@@ -82,15 +84,14 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
             swatchcenter = Point(boxtopleft(bbox).x - swatchwidth/2 + (i * swatchwidth) , O.y)
             sethue(p)
             box(swatchcenter, swatchwidth - 1, table.rowheights[1]/2 - 1,  :fill)
-            if colordiff(p, colorant"white") < 1
-                @layer begin
-                    setline(0.4)
-                    sethue("grey70")
-                    box(swatchcenter, swatchwidth - 1, table.rowheights[1]/2 - 1,  :stroke)
-                end
+            @layer begin
+                setline(0.4)
+                sethue("grey50")
+                box(swatchcenter, swatchwidth - 1, table.rowheights[1]/2 - 1,  :stroke)
             end
         end
     end
+
     # third tile, continuous sampling
     @layer begin
         translate(table[3])
@@ -111,13 +112,106 @@ end
 
 # Making new colorschemes
 
-To make new ColorSchemes, you can quickly build arrays of colors; refer the ColorSchemes.jl documentation. You can also use the ColorSchemeTools function `make_colorscheme()`, and supply information about the color sequences you want.
+To make new color schemes, you can quickly build arrays of colors; refer the Colors.jl and ColorSchemes.jl documentation.
 
-The following formats are possible:
+Colors.jl provides a method to `range()` that accepts colorants:
 
+```
+using ColorSchemes, Colors
+
+cs = ColorScheme(range(RGB(1, 0, 0), stop = colorant"green", length=15),
+        "gradient", "red to green 15")
+```
+
+The ColorSchemeTools function `make_colorscheme()` lets you build more elaborate schemes.
+
+You can supply the color specifications using different methods, depending on the arguments you supply:
+
+- a list of colors and a number specifying the length
 - a dictionary of linear segments
 - an 'indexed list' of RGB values
 - three Julia functions that generate values between 0 and 1 for the RGB levels
+
+The diagrams in this section show: the elements of a colorscheme as individual swatches along the top; the changing RGB curves in the middle; and a continuously-sampled gradient below.
+
+## List of colors
+
+Given a list of colors, use `make_colorscheme(list, n)` to create a new colorscheme with `n` steps.
+
+For example, given an array of various colorants:
+
+```
+roygbiv = [
+    colorant"red",
+    colorant"orange",
+    colorant"yellow",
+    colorant"green",
+    colorant"blue",
+    colorant"indigo",
+    colorant"violet"
+]
+```
+
+you can use `make_colorscheme(cols, 10)` to create a colorscheme with 10 steps:
+
+```@example drawscheme
+roygbiv = [ # hide
+    colorant"red", # hide
+    colorant"orange", # hide
+    colorant"yellow", # hide
+    colorant"green", # hide
+    colorant"blue", # hide
+    colorant"indigo", # hide
+    colorant"violet" # hide
+] # hide
+scheme = make_colorscheme(roygbiv, 10)
+draw_rgb_levels(scheme, 800, 200, "assets/figures/roygbiv-10.svg") # hide
+nothing # hide
+```
+
+!["showing roygbiv 10 colorant list colorscheme"](assets/figures/roygbiv-10.svg)
+
+If you increase the number of steps, the interpolations are smoother. Here it is with 200 steps (shown in the top bar):
+
+```@example drawscheme
+roygbiv = [ # hide
+    colorant"red", # hide
+    colorant"orange", # hide
+    colorant"yellow", # hide
+    colorant"green", # hide
+    colorant"blue", # hide
+    colorant"indigo", # hide
+    colorant"violet" # hide
+] # hide
+scheme = make_colorscheme(roygbiv, 200)
+draw_rgb_levels(scheme, 800, 200, "assets/figures/roygbiv-200.svg") # hide
+nothing # hide
+```
+
+!["showing roygbiv colorant list colorscheme"](assets/figures/roygbiv-200.svg)
+
+You can supply the colors in any format, as long as it's a Colorant:
+
+```@example drawscheme
+cols = Any[
+    RGB(0, 0, 1),
+    Gray(0.5),
+    HSV(50., 0.7, 1.),
+    Gray(0.4),
+    LCHab(54, 105, 40),
+    HSV(285., 0.9, 0.8),
+    colorant"#FFEEFF",
+    colorant"hotpink",
+]
+scheme = make_colorscheme(cols, 8)
+draw_rgb_levels(scheme, 800, 200, "assets/figures/colorantlist.svg") # hide
+nothing # hide
+```
+
+!["showing colorant list colorscheme"](assets/figures/colorantlist.svg)
+
+The `Any` array was necessary only because of the presence of the `Gray(0..5)` element. If all the elements are colorants, you can use
+`[]` or `Colorant[]`.
 
 ## Linearly-segmented colors
 
@@ -160,7 +254,6 @@ using Colors, ColorSchemes
 scheme = make_colorscheme(dict)
 ```
 
-By plotting the color components separately it's possible to see how the curves change. This diagram shows both the defined color levels as swatches along the top, and a continuously-sampled image below:
 
 ```@example drawscheme
 cdict = Dict(:red  => ((0.0,  0.0,  0.0),
@@ -295,5 +388,4 @@ nothing # hide
 
 ```@docs
 make_colorscheme
-get_linear_segment_color
 ```

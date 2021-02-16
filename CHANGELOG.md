@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.2.0] - 2021-02-16
+
+### Added
+
+- make_colorscheme with array of colorants
+
+### Changed
+
+### Removed
+
+### Deprecated
+
 ## [v1.1.0] - 2020-07-14
 
 ### Added

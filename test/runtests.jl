@@ -77,9 +77,11 @@ function run_all_tests()
         @test_broken unique(new_img) == new_img
     end
 
-    # TODO Test all make-colorscheme functionality
     @testset "make_colorscheme tests" begin
-
+        cs = make_colorscheme([colorant"red", colorant"green", colorant"blue"], 20)
+        @test cs[1] == RGB{Float64}(1.0,0.0,0.0)
+        @test cs[end] == RGB{Float64}(0.0,0.0,1.0)
+        colorscheme_to_text(cs, "rgb_scheme", "rgb_scheme.jl")
     end
 end
 
@@ -142,9 +144,13 @@ function run_minimum_tests()
 end
 
 if get(ENV, "ColorSchemeTools_KEEP_TEST_RESULTS", false) == "true"
-    cd(mktempdir())
-    @info("running tests in: $(pwd())")
-    @info("...Keeping the results")
+    # they changed mktempdir in v1.3
+    if VERSION <= v"1.2"
+        cd(mktempdir())
+    else
+        cd(mktempdir(cleanup=false))
+    end
+    @info("...Keeping the results in: $(pwd())")
     @info("..running minimum tests")
     run_minimum_tests()
     @info("..running all tests")
@@ -153,14 +159,14 @@ if get(ENV, "ColorSchemeTools_KEEP_TEST_RESULTS", false) == "true"
 else
     mktempdir() do tmpdir
     cd(tmpdir) do
-        @info("running tests in: $(pwd())")
-        @info("but not keeping the results")
-        @info("because you didn't do: ENV[\"ColorSchemeTools_KEEP_TEST_RESULTS\"] = \"true\"")
+        @info("..running tests in: $(pwd())")
+        @info("..but not keeping the results")
+        @info("..because you didn't do: ENV[\"ColorSchemeTools_KEEP_TEST_RESULTS\"] = \"true\"")
         @info("..running minimum tests")
         run_minimum_tests()
         @info("..running all tests")
         run_all_tests()
-        @info("Test images weren't saved. To see the test images, next time do this before running:")
+        @info("..Test images weren't saved. To see the test images, next time do this before running:")
         @info(" ENV[\"ColorSchemeTools_KEEP_TEST_RESULTS\"] = \"true\"")
         end
     end

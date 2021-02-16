@@ -8,7 +8,7 @@ This package provides some tools for working with ColorSchemes:
 """
 module ColorSchemeTools
 
-using Images, ColorSchemes, Colors, Clustering, FileIO
+using Images, ColorSchemes, Colors, Clustering, FileIO, Interpolations
 
 import Base.get
 
@@ -484,6 +484,36 @@ function make_colorscheme(f1::Function, f2::Function, f3::Function;
         end
     end
     return ColorScheme(cs, category, notes)
+end
+
+"""
+    make_colorscheme(colorlist, steps)
+
+Make a new colorscheme consisting of the colors in the array `colorlist`.
+
+```
+make_colorscheme([RGB(1, 0, 0), HSB(285, 0.7, 0.7), colorant"darkslateblue"], 20)
+```
+
+"""
+function make_colorscheme(colorlist, steps)
+    colorlist_rgb = convert.(RGB, colorlist)
+    reds = convert.(Float64, getfield.(colorlist_rgb, :r))
+    greens = convert.(Float64, getfield.(colorlist_rgb, :g))
+    blues = convert.(Float64, getfield.(colorlist_rgb, :b))
+    rednodes   = (range(0.0, 1.0, length=length(reds)),)
+    greennodes = (range(0.0, 1.0, length=length(greens)),)
+    bluenodes  = (range(0.0, 1.0, length=length(blues)),)
+
+    reditp = interpolate(rednodes, reds, Gridded(Linear()))
+    greenitp = interpolate(greennodes, greens, Gridded(Linear()))
+    blueitp = interpolate(bluenodes, blues, Gridded(Linear()))
+
+    colors = Color[]
+    for i in range(0, 1, length=steps)
+        push!(colors, RGB(reditp(i), greenitp(i), blueitp(i)))
+    end
+    return ColorScheme(colors, "interpolated gradient", "$steps")
 end
 
 end
