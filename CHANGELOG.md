@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.3.0] - forthcoming
+
+### Added
+
+### Changed
+
+- update deps
+- broken tests now work
+
+### Removed
+
+### Deprecated
+
 ## [v1.2.0] - 2021-02-16
 
 ### Added

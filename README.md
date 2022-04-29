@@ -1,6 +1,6 @@
 | **Documentation**                       | **Build Status**                                                                                |
 |:--------------------------------------- |:----------------------------------------------------------------------------------------------- |
-| [![][docs-stable-img]][docs-stable-url] [![][docs-latest-img]][docs-latest-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
+| [![][docs-stable-img]][docs-stable-url] [![][docs-latest-img]][docs-latest-url] |  [![Build Status][ci-img]][ci-url] | [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
 
 ## ColorSchemeTools
 
@@ -22,11 +22,11 @@ This package relies on:
 [docs-latest-img]: https://img.shields.io/badge/docs-in_development-orange.svg
 [docs-latest-url]: https://JuliaGraphics.github.io/ColorSchemeTools.jl/latest/
 
-[travis-img]: https://travis-ci.com/JuliaGraphics/ColorSchemeTools.jl.svg?branch=master
-[travis-url]: https://travis-ci.com/JuliaGraphics/ColorSchemeTools.jl
-
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/59hherf65c713iaw/branch/master?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/cormullion/colorschemetools-jl
 
 [codecov-img]: https://codecov.io/gh/JuliaGraphics/ColorSchemeTools.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/JuliaGraphics/ColorSchemeTools.jl
+
+[ci-img]: https://github.com/JuliaGraphics/ColorSchemeTools.jl/workflows/CI/badge.svg
+[ci-url]: https://github.com/JuliaGraphics/ColorSchemeTools.jl/actions?query=workflow%3ACI
