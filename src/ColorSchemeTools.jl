@@ -381,7 +381,7 @@ function get_indexed_list_color(indexedlist, n)
 
     p = sortperm(stops)
     sort!(stops)
-    rgbvalues = rgbvalues[p]
+    rgbvalues = rgbvalues[p] # needs Julia v1.6
     upper = findfirst(f -> f >= m, stops)
     if isnothing(upper) # use final value
         upper = length(stops)

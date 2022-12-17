@@ -7,6 +7,7 @@
 ### Changed
 
 - fixed indexed list handling (#10)
+- Julia version now 1.6
 
 ### Removed
 
