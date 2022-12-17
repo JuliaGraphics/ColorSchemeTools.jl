@@ -17,7 +17,7 @@ function run_all_tests()
         @test length(hokusai_test) == 10
 
         # extract colors and weights
-        c, w =  ColorSchemeTools.extract_weighted_colors(dirname(@__FILE__) * "/hokusai.jpg", 10, 10, 0.01; shrink = 4)
+        c, w = ColorSchemeTools.extract_weighted_colors(dirname(@__FILE__) * "/hokusai.jpg", 10, 10, 0.01; shrink=4)
 
         @test length(c) == 10
         @test length(w) == 10
@@ -49,8 +49,8 @@ function run_all_tests()
 
     @testset "getinverse tests" begin
         getinverse(ColorSchemes.colorschemes[:leonardo], RGB(1, 0, 0))
-        getinverse(ColorScheme([Colors.RGB(0,0,0), Colors.RGB(1,1,1)]),  Colors.RGB(.5,.5,.5))
-        cs = ColorScheme(range(Colors.RGB(0,0,0), stop=Colors.RGB(1,1,1), length=5))
+        getinverse(ColorScheme([Colors.RGB(0, 0, 0), Colors.RGB(1, 1, 1)]), Colors.RGB(0.5, 0.5, 0.5))
+        cs = ColorScheme(range(Colors.RGB(0, 0, 0), stop=Colors.RGB(1, 1, 1), length=5))
         gi = getinverse(cs, cs[3])
         @test gi == 0.5
     end
@@ -58,8 +58,8 @@ function run_all_tests()
     @testset "convert to scheme tests" begin
         # Add color to a grayscale image.
         # now using ColorScheme objects and .colors accessors
-        red_cs = ColorScheme(range(RGB(0,0,0), stop=RGB(1,0,0), length=11))
-        gray_cs = ColorScheme(range(RGB(0,0,0), stop=RGB(1,1,0), length=11))
+        red_cs = ColorScheme(range(RGB(0, 0, 0), stop=RGB(1, 0, 0), length=11))
+        gray_cs = ColorScheme(range(RGB(0, 0, 0), stop=RGB(1, 1, 0), length=11))
         vs = [getinverse(gray_cs, p) for p in red_cs.colors]
         cs = ColorScheme([RGB(v, v, v) for v in vs])
         rcs = [get(red_cs, p) for p in vs]
@@ -71,18 +71,37 @@ function run_all_tests()
 
         # Should be able to uniquely match each increasing color with the next
         # increasing color in the new scale.
-        red_cs = ColorScheme(range(RGB(0,0,0), stop=RGB(1,1,1)))
-        blue_scale_img = range(RGB(0,0,0), stop=RGB(0,0,1))
+        red_cs = ColorScheme(range(RGB(0, 0, 0), stop=RGB(1, 1, 1)))
+        blue_scale_img = range(RGB(0, 0, 0), stop=RGB(0, 0, 1))
         new_img = convert_to_scheme(red_cs, blue_scale_img)
-        @test_broken unique(new_img) == new_img
+        @test unique(new_img) == new_img
     end
 
     @testset "make_colorscheme tests" begin
         cs = make_colorscheme([colorant"red", colorant"green", colorant"blue"], 20)
-        @test cs[1] == RGB{Float64}(1.0,0.0,0.0)
-        @test cs[end] == RGB{Float64}(0.0,0.0,1.0)
+        @test cs[1] == RGB{Float64}(1.0, 0.0, 0.0)
+        @test cs[end] == RGB{Float64}(0.0, 0.0, 1.0)
         colorscheme_to_text(cs, "rgb_scheme", "rgb_scheme.jl")
     end
+
+    @testset "make_colorscheme tests" begin
+        # check that list ordering isn't important
+        alist2 = (
+            (1.00, (1.00, 0.00, 0.75)),
+            (0.000, (1.00, 0.00, 0.16)),
+            (0.586, (0.00, 1.00, 1.00)),
+        )
+
+        alist2s = (
+            (0.000, (1.00, 0.00, 0.16)),
+            (0.586, (0.00, 1.00, 1.00)),
+            (1.00, (1.00, 0.00, 0.75)),
+        )
+        s1 = make_colorscheme(alist2, length=5)
+        s2 = make_colorscheme(alist2s, length=5)
+        @test s1.colors == s2.colors
+    end
+
 end
 
 function run_minimum_tests()

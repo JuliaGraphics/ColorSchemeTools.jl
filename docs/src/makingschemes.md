@@ -112,7 +112,7 @@ end
 
 # Making new colorschemes
 
-To make new color schemes, you can quickly build arrays of colors; refer the Colors.jl and ColorSchemes.jl documentation.
+To make new colorschemes, you can quickly build arrays of colors; refer the Colors.jl and ColorSchemes.jl documentation.
 
 Colors.jl provides a method to `range()` that accepts colorants:
 
@@ -123,7 +123,7 @@ cs = ColorScheme(range(RGB(1, 0, 0), stop = colorant"green", length=15),
         "gradient", "red to green 15")
 ```
 
-The ColorSchemeTools function `make_colorscheme()` lets you build more elaborate schemes.
+The ColorSchemeTools function `make_colorscheme()` lets you build more elaborate colorschemes.
 
 You can supply the color specifications using different methods, depending on the arguments you supply:
 
@@ -247,7 +247,7 @@ The change of color between point `p1` and `p2` is defined by `b` and `c`:
 
 If `a` and `b` (or `c` and `d`) aren't the same, the color will abruptly jump. Notice that the very first `a` and the very last `d` aren't used.
 
-To create a new ColorScheme from a suitable dictionary in this format, run `make_colorscheme()`.
+To create a new colorscheme from a suitable dictionary in this format, run `make_colorscheme()`.
 
 ```
 using Colors, ColorSchemes
@@ -275,7 +275,7 @@ nothing # hide
 
 ## Indexed-list color schemes
 
-The data to define an 'indexed list' color scheme looks like this:
+The data to define an 'indexed list' colorscheme looks like this:
 
 ```
 terrain = (
@@ -290,7 +290,9 @@ terrain = (
 
 The first item of each element is the location between 0 and 1, the second specifies the RGB values at that point.
 
-The `make_colorscheme(indexedlist)` function makes a new ColorScheme from such an indexed list.
+The `make_colorscheme(indexedlist)` function makes a new colorscheme from such an indexed list.
+
+Use the `length` keyword to specify how many colors are used in the colorscheme.
 
 For example:
 
@@ -311,7 +313,7 @@ nothing # hide
 
 ## Functional color schemes
 
-The colors in a 'functional' color scheme are produced by three functions that calculate the color values at each point on the scheme.
+The colors in a 'functional' colorscheme are produced by three functions that calculate the color values at each point on the colorscheme.
 
 The `make_colorscheme()` function applies the first supplied function at each point on the colorscheme for the red values, the second function for the green values, and the third for the blue. You can use defined functions or supply anonymous ones.
 

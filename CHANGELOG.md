@@ -1,6 +1,18 @@
 # Changelog
 
-## [v1.3.0] -2022-08-18
+## [v1.4.0] - 2022-12
+
+### Added
+
+### Changed
+
+- fixed indexed list handling (#10)
+
+### Removed
+
+### Deprecated
+
+## [v1.3.0] - 2022-08-18
 
 ### Added
 
