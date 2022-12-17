@@ -358,10 +358,18 @@ function get_indexed_list_color(indexedlist, n)
     try
         for i in indexedlist
             push!(stops, first(i))
-            push!(rgbvalues, last(i))
+            push!(rgbvalues, convert.(Float64, last(i)))
         end
     catch e
-        @warn "ColorSchemeTools.get_indexed_list_colors(): error $e processing list"
+        throw(error("ColorSchemeTools.get_indexed_list_colors(): error in the indexed list's format.\n
+            Format should be something like this:
+            (
+                (0.0, (1.00, 0.00, 0.16)),
+                (0.5, (0.00, 1.00, 1.00)),
+                (0.7, (0.00, 0.00, 1.00)),
+                (0.9, (1.00, 0.00, 1.00)),
+                (1.0, (1.00, 0.00, 0.75))
+            )"))    
     end
 
     if length(stops) != length(rgbvalues)
