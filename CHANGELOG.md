@@ -1,13 +1,13 @@
 # Changelog
 
-## [v1.4.0] - 2022-12
+## [v1.4.0] - 2022-12-21
 
 ### Added
 
 ### Changed
 
 - fixed indexed list handling (#10)
-- Julia version now 1.6
+- minimum Julia version now 1.6
 
 ### Removed
 
