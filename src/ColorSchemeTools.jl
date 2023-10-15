@@ -23,6 +23,7 @@ export
     image_to_swatch,
     sortcolorscheme,
     make_colorscheme,
+    add_alpha,
     get_linear_segment_color,
     get_indexed_list_color
 
@@ -465,15 +466,17 @@ function make_colorscheme(indexedlist::Tuple;
 end
 
 """
-    make_colorscheme_new(f1::Function, f2::Function, f3::Function;
+    make_colorscheme(f1::Function, f2::Function, f3::Function;
         model    = :RGB,
         length   = 100,
         category = "",
         notes    = "functional ColorScheme")
 
-Make a colorscheme using functions. Each function should take a value between 0
-and 1 and return for that color component at each point on the colorscheme,
-depending on the color model.
+Make a colorscheme using functions. Each argument is a function that returns a
+value for the red, green, and blue components for the values between 0
+and 1.
+
+`model` is the color model, and can be `:RGB`, `:HSV`, or `:LCHab`.
 
 Use `length` keyword to set the number of colors in the colorscheme.
 
@@ -495,12 +498,22 @@ For the `:LCHab` color model:
 - f1 - [0.0 - 100.0] - luminance
 - f2 - [0.0 - 100.0] - chroma
 - f3 - [0.0 - 360.0] - hue
+
+### Example
+
+Make a colorscheme with the red component defined as a sine curve running  from
+0 to π and back to 0, the green component is always 0, and the blue component starts at
+π and goes to 0 at 0.5 (it's clamped to 0 after that).
+
+```julia
+make_colorscheme(n -> sin(n * π), n -> 0, n -> cos(n * π))
+```
 """
 function make_colorscheme(f1::Function, f2::Function, f3::Function;
-    model=:RGB,
-    length=100,
-    category="",
-    notes="functional ColorScheme")
+        model=:RGB,
+        length=100,
+        category="",
+        notes="functional ColorScheme")
     # output is always RGB for the moment
     cs = RGB[]
     if model == :LCHab
@@ -518,16 +531,105 @@ function make_colorscheme(f1::Function, f2::Function, f3::Function;
     end
     counter = 0
     for i in range(0.0, stop=1.0, length=length)
-        raw1, raw2, raw3 = f1(i), f2(i), f3(i)
-        final1 = clamp(raw1, clamp1...)
-        final2 = clamp(raw2, clamp2...)
-        final3 = clamp(raw3, clamp3...)
+        final1 = clamp(f1(i), clamp1...)
+        final2 = clamp(f2(i), clamp2...)
+        final3 = clamp(f3(i), clamp3...)
         if model == :LCHab
             push!(cs, convert(RGB, LCHab(final1, final2, final3)))
         elseif model == :RGB
             push!(cs, RGB(final1, final2, final3))
         elseif model == :HSV
             push!(cs, convert(RGB, HSV(final1, final2, final3)))
+        end
+    end
+    return ColorScheme(cs, category, notes)
+end
+
+"""
+    make_colorscheme(f1::Function, f2::Function, f3::Function, f4::Function;
+        model    = :RGBA,
+        length   = 100,
+        category = "",
+        notes    = "functional ColorScheme")
+
+Make a colorscheme with transparency using functions. Each argument is a
+function that returns a value for the red, green, blue, and alpha components for
+the values between 0 and 1.
+
+`model` is the color model, and can be `:RGBA`, `:HSVA`, or `:LCHabA`.
+
+Use `length` keyword to set the number of colors in the colorscheme.
+
+The default color mo            del is `:RGBA`, and the functions should return values in the
+appropriate range:
+
+- f1 - [0.0 - 1.0]   - red
+- f2 - [0.0 - 1.0]   - green
+- f3 - [0.0 - 1.0]   - blue
+- f4 - [0.0 - 1.0]   - alpha
+
+For the `:HSVA` color model:
+
+- f1 - [0.0 - 360.0] - hue
+- f2 - [0.0 - 1.0]   - saturataion
+- f3 - [0.0 - 1.0]   - value (brightness)
+- f4 - [0.0 - 1.0]   - alpha
+
+For the `:LCHabA` color model:
+
+- f1 - [0.0 - 100.0] - luminance
+- f2 - [0.0 - 100.0] - chroma
+- f3 - [0.0 - 360.0] - hue
+- f4 - [0.0 - 1.0]   - alpha
+
+## Examples
+
+
+
+```julia
+csa = make_colorscheme1(
+    n -> red(get(ColorSchemes.leonardo, n)), 
+    n -> green(get(ColorSchemes.leonardo, n)), 
+    n -> blue(get(ColorSchemes.leonardo, n)), 
+    n -> 1 - identity(n))
+
+```
+"""
+function make_colorscheme(f1::Function, f2::Function, f3::Function, f4::Function;
+        model=:RGBA,
+        length=100,
+        category="",
+        notes="functional ColorScheme")
+    # output is always RGBA
+    cs = RGBA[]
+    if model == :LCHabA
+        clamp1 = (0.0, 100.0) #
+        clamp2 = (0.0, 100.0) #
+        clamp3 = (0.0, 360.0) # Hue is 0-360
+        clamp4 = (0.0, 1.0)
+    elseif model == :HSVA
+        clamp1 = (0.0, 360.0) # Hue is 0-360
+        clamp2 = (0.0, 1.0) #
+        clamp3 = (0.0, 1.0) #
+        clamp4 = (0.0, 1.0)
+    elseif model == :RGBA
+        clamp1 = (0.0, 1.0) #
+        clamp2 = (0.0, 1.0) #
+        clamp3 = (0.0, 1.0) #
+        clamp4 = (0.0, 1.0)
+    end
+    counter = 0
+    for i in range(0.0, stop=1.0, length=length)
+        final1 = clamp(f1(i), clamp1...)
+        final2 = clamp(f2(i), clamp2...)
+        final3 = clamp(f3(i), clamp3...)
+        final4 = clamp(f4(i), clamp4...)
+        if model == :LCHabA
+            push!(cs, convert(RGBA, LCHab(final1, final2, final3, final4)))
+        elseif model == :RGBA
+            push!(cs, RGBA(final1, final2, final3, final4))
+        elseif model == :HSVA
+            push!(cs, convert(RGBA, HSVA(final1, final2, final3, final4)))
         end
     end
     return ColorScheme(cs, category, notes)
@@ -561,6 +663,117 @@ function make_colorscheme(colorlist::Array, steps)
         push!(colors, RGB(reditp(i), greenitp(i), blueitp(i)))
     end
     return ColorScheme(colors, "interpolated gradient", "$steps")
+end
+
+"""
+    add_alpha(cs::ColorScheme, alpha::Real=0.5)
+
+Make a copy of the colorscheme `cs` with alpha opacity value `alpha`.
+
+### Example
+
+Make a copy of the PuOr colorscheme and set every element of it to have alpha
+opacity 0.5
+
+```julia
+add_alpha(ColorSchemes.PuOr, 0.5)
+```
+"""
+function add_alpha(cs::ColorScheme, alpha::Real=0.5)
+    return make_colorscheme(
+        n -> red(get(cs, n)),
+        n -> green(get(cs, n)),
+        n -> blue(get(cs, n)),
+        n -> alpha,
+        model=:RGBA,
+        length=length(cs.colors),
+        category=cs.category,
+        notes=cs.notes * " with alpha"
+    )
+end
+
+"""
+    add_alpha(cs::ColorScheme, alpha::Vector)
+
+Make a copy of the colorscheme `cs` with alpha opacity values in the vector
+`alpha`.
+
+### Example
+
+Make a copy of the PuOr colorscheme, set the first element to have alpha
+opacity 1.0, the last element to have opacity 0.0, with intermediate elements
+taking values between 1.0 and 0.0.
+
+```julia
+add_alpha(ColorSchemes.PuOr, [1.0, 0.0])
+```
+"""
+function add_alpha(cs::ColorScheme, alpha::Vector)
+    alphanodes = (range(0, 1, length=length(alpha)),)
+    itpalpha = interpolate(alphanodes, 
+        range(alpha[1], alpha[end], length=length(alpha)), 
+        Gridded(Linear()))
+    return make_colorscheme(
+        n -> red(get(cs, n)),
+        n -> green(get(cs, n)),
+        n -> blue(get(cs, n)),
+        n -> itpalpha(n),
+        model=:RGBA,
+        length=length(cs.colors),
+        category=cs.category,
+        notes=cs.notes * " with alpha"
+    )
+end
+
+"""
+    add_alpha(cs::ColorScheme, r::Range)
+
+Make a copy of the colorscheme `cs` with alpha opacity values in the range `r`.
+
+### Example
+
+Make a copy of the PuOr colorscheme, set the first element to have alpha
+opacity 0.5, the last element to have opacity 0.0, with intermediate elements
+taking values between 0.5 and 1.0.
+
+```julia
+add_alpha(ColorSchemes.PuOr, 0.5:0.1:1.0)
+```
+"""
+function add_alpha(cs::ColorScheme, r::T where T <: AbstractRange)
+    if length(r) == 1
+        throw(error("add_alpha: range $(r) should be have more than one step."))
+    end
+    add_alpha(cs, collect(r))
+end
+
+"""
+    add_alpha(cs::ColorScheme, f::Function)
+
+Make a copy of the colorscheme `cs` with alpha opacity values defined by the
+function.
+
+### Example
+
+Make a copy of the PuOr colorscheme, set the opacity of each element to be the
+result of calling the function on the value. So at value 0.5, the opacity is
+1.0, but it's 0.0 at either end.
+
+```julia
+add_alpha(ColorSchemes.PuOr, (n) -> sin(n * π))
+```
+"""
+function add_alpha(cs::ColorScheme, f::Function)
+    return make_colorscheme(
+        n -> red(get(cs, n)),
+        n -> green(get(cs, n)),
+        n -> blue(get(cs, n)),
+        n -> f(n),
+        model=:RGBA,
+        length=length(cs.colors),
+        category=cs.category,
+        notes=cs.notes * " with alpha"
+    )
 end
 
 end

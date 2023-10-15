@@ -1,5 +1,39 @@
 ```@setup drawscheme
 using Luxor, Colors, ColorSchemes, ColorSchemeTools
+
+function draw_transparent(cs::ColorScheme, csa::ColorScheme,
+    w=800, h=500, filename="/tmp/transparency-levels.svg"
+    )
+    Drawing(w, h, filename)
+    origin()
+    background("black")
+    setlinejoin("bevel")
+
+    N = length(csa.colors) * 2
+    h = w ÷ 4
+    backgroundtiles = Tiler(w, h, 4, N, margin=0)
+    setline(0)
+    for (pos, n) in backgroundtiles
+        if iseven(backgroundtiles.currentrow + backgroundtiles.currentcol) 
+            sethue("grey80")
+        else
+            sethue("grey90")
+        end
+        box(backgroundtiles, n, :fillstroke)
+    end
+    referencecolortiles = Tiler(w, h, 2, N ÷ 2, margin=0)
+    for (pos, n) in referencecolortiles[1:N ÷ 2]
+        setcolor(cs[n])
+        box(referencecolortiles, n, :fillstroke)
+    end
+    for (i, (pos, n)) in enumerate(referencecolortiles[N ÷ 2 + 1 : end])
+        setcolor(csa[i])
+        box(referencecolortiles, n, :fillstroke)
+    end
+    finish()
+    nothing
+end
+
 function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-levels.svg")
     # This function is a quick hack to draw swatches and curves in a documenter pass.
     # The diagrams are merely illustrative, not 100% technically precise :(
@@ -45,6 +79,7 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         redline = Point[]
         greenline = Point[]
         blueline = Point[]
+        alphaline = Point[]
         verticalscale=boxheight(bbox)
         stepping = 0.0025
         # TODO better way to examine quantized color values
@@ -54,10 +89,12 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
             r = red(c)
             g = green(c)
             b = blue(c)
+            a = alpha(c)
             x = rescale(i, 0, 1, -boxwidth(bbox)/2, boxwidth(bbox)/2)
             push!(redline, Point(x, boxbottomcenter(bbox).y - verticalscale * r))
             push!(greenline, Point(x, boxbottomcenter(bbox).y - verticalscale * g))
             push!(blueline, Point(x, boxbottomcenter(bbox).y - verticalscale * b))        
+            push!(alphaline, Point(x, boxbottomcenter(bbox).y - verticalscale * a))        
         end
         # the idea to make the lines different weights to assist reading overlaps may not be a good one
         setline(1)
@@ -69,6 +106,9 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         setline(0.7)
         sethue("green")
         poly(greenline, :stroke)
+        setline(0.4)
+        sethue("grey50")
+        poly(alphaline, :stroke)
     end
 
     # top tile, swatches
@@ -82,7 +122,7 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         swatchwidth = panewidth/l
         for (i, p) in enumerate(cs.colors)
             swatchcenter = Point(boxtopleft(bbox).x - swatchwidth/2 + (i * swatchwidth) , O.y)
-            sethue(p)
+            setcolor(p)
             box(swatchcenter, swatchwidth - 1, table.rowheights[1]/2 - 1,  :fill)
             @layer begin
                 setline(0.4)
@@ -94,13 +134,14 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
 
     # third tile, continuous sampling
     @layer begin
+        setline(0)
         translate(table[3])
         # draw blend
         stepping = 0.0005
         boxw = panewidth * stepping
         for i in 0:stepping:1
             c = get(cs, i)
-            sethue(c)
+            setcolor(c)
             xpos = rescale(i, 0, 1, O.x - panewidth/2, O.x + panewidth/2 - boxw)
             box(Point(xpos + boxw/2, O.y), boxw, table.rowheights[3]/2, :fillstroke)
         end
@@ -132,7 +173,7 @@ You can supply the color specifications using different methods, depending on th
 - an 'indexed list' of RGB values
 - three Julia functions that generate values between 0 and 1 for the RGB levels
 
-The diagrams in this section show: the elements of a colorscheme as individual swatches along the top; the changing RGB curves in the middle; and a continuously-sampled gradient below.
+The diagrams in this section show: the elements of a colorscheme as individual swatches along the top; the changing RGBA curves in the middle; and a continuously-sampled gradient below.
 
 ## List of colors
 
@@ -387,7 +428,47 @@ nothing # hide
 
 !["functional color schemes"](assets/figures/funcscheme6.svg)
 
+## Changing alpha opacity of colorschemes
+
+Usually, colorschemes are RGB values with no alpha values.
+Use `add_alpha()` to add alpha opacity values to colorschemes. 
+
+In the illustrations, the top row shows the original colorscheme, the bottom row shows the modified colorscheme drawn over a checkerboard pattern to show the alpha opacity.
+
+You can make a new colorscheme where every color now has a specific alpha opacity value:
+
+```@example drawscheme
+cs = ColorSchemes.PRGn_10
+csa = add_alpha(cs, 0.8)
+draw_transparent(cs, csa, 800, 200, "assets/figures/funcscheme7.svg") # hide
+nothing # hide
+```
+
+!["functional color schemes"](assets/figures/funcscheme7.svg)
+
+You can specify alpha values using a range:
+
+```@example drawscheme
+cs = ColorSchemes.lisbon10
+csa = add_alpha(cs, 0.3:0.1:1.0)
+draw_transparent(cs, csa, 800, 200, "assets/figures/funcscheme8.svg") # hide
+nothing # hide
+```
+
+!["functional color schemes"](assets/figures/funcscheme8.svg)
+
+Or you can specify alpha values using a function that returns a value for every value between 0 and 1. In the next example the opacity varies from 1.0 to 0.0 and back to 1.0 again, as the colorscheme index goes from 0 to 1; at point 0.5, `abs(cos(0.5 * π))` is 0.0, so the colorscheme is completely transparent at that point.
+
+```@example drawscheme
+cs = ColorSchemes.PuOr
+csa = add_alpha(cs, (n) -> abs(cos(n * π)))
+draw_transparent(cs, csa, 800, 200, "assets/figures/funcscheme9.svg") # hide
+nothing # hide
+```
+
+!["functional color schemes"](assets/figures/funcscheme9.svg)
 
 ```@docs
 make_colorscheme
+add_alpha
 ```

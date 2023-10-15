@@ -4,9 +4,13 @@
 
 ## ColorSchemeTools
 
-This package provides tools for working with colorschemes and colormaps. It's a companion to the ColorSchemes.jl package.
+This package provides tools for working with colorschemes and colormaps. It's a
+companion to the
+[ColorSchemes.jl](https://github.com/JuliaGraphics/ColorSchemes.jl) package.
 
-For example, you can extract colorschemes from images, and replace an image colorscheme with another. There are also functions for creating color schemes from lists, dictionaries, and functions.
+For example, you can extract colorschemes from images, and replace an image
+colorscheme with another. There are also functions for creating new color schemes
+from lists, dictionaries, and functions.
 
 This package relies on:
 

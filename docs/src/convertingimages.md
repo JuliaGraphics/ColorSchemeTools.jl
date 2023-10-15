@@ -8,7 +8,7 @@ It's possible to convert an image using one color scheme to use another.
 
 In the following figure, the Julia logo is converted to use a ColorScheme with no black or white:
 
-```
+```julia
 using FileIO, ColorSchemes, ColorSchemeTools, Images
 
 img = load("julia-logo-square.png")

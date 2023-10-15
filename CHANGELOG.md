@@ -1,5 +1,20 @@
 # Changelog
 
+## [v1.5.0] - 2023-10-12 09:24:07
+
+### Added
+
+- `add_alpha`
+
+### Changed
+
+- fixed indexed list handling (#10)
+- minimum Julia version now 1.6
+
+### Removed
+
+### Deprecated
+
 ## [v1.4.0] - 2022-12-21
 
 ### Added

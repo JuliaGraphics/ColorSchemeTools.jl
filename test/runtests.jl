@@ -102,6 +102,27 @@ function run_all_tests()
         @test s1.colors == s2.colors
     end
 
+    @testset "add_alpha tests" begin
+        csa = add_alpha(ColorSchemes.plasma, 0.5)
+        # all alpha = 0.5
+        @test all(isequal(0.5), getfield.(csa.colors, :alpha)) == true
+
+        csa = add_alpha(ColorSchemes.plasma, [0.8, 1.0])
+        # all alpha between 0.8 and 1.0
+        @test all(>=(0.8), getfield.(csa.colors, :alpha))
+
+        csa = add_alpha(ColorSchemes.plasma, [1.0, 0.8])
+        # all alpha > 0.8
+        @test all(>=(0.8), getfield.(csa.colors, :alpha))
+
+        csa = add_alpha(ColorSchemes.plasma, (n) -> sin(n * π))
+        # all alphas close to sin(n π)
+        for (i, a) in enumerate(csa.colors)
+            a, b = sin(i / 256 * π), a.alpha
+            @test abs(a - b) < 0.1
+        end
+    end
+
 end
 
 function run_minimum_tests()
