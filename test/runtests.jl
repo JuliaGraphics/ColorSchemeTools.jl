@@ -1,5 +1,9 @@
 using Test, ColorSchemes, ColorSchemeTools, FileIO, Colors
-using ImageMagick, QuartzImageIO
+using ImageMagick
+
+@static if Sys.isapple()
+    using QuartzImageIO
+end
 
 function run_all_tests()
 

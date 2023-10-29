@@ -15,8 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         julia-version:
-          - "1.6"
           - "1"
+          - "1.6"
+          - "1.9"
           - "nightly"
         os:
           - ubuntu-latest
