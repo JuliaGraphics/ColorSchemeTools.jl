@@ -1,9 +1,11 @@
-using ColorSchemes, Colors, Interpolations
+# using ColorSchemes, Colors, Interpolations
 
-# code from peterkovesi/PerceptualColourMaps.jl
+# this code is copioed from peterkovesi/PerceptualColourMaps.jl
 # https://github.com/peterkovesi/PerceptualColourMaps.jl/
-# Peter is no longer updating his package
-# this code of his provides equalizecolormap
+# currently unused here
+# Because: Peter is no longer updating his package
+# this code of his provided equalizecolormap()
+# It's copied here for possibly reusing one day
 
 #-------------------------------------------------------------------------------
 """

@@ -7,3 +7,6 @@ Luxor = "ae8d54c2-7ccd-5906-9d76-62fc9837b5bc"
 
 [compat]
 Documenter = "1"
+Luxor = "3"
+Colors = "0.9, 0.10, 0.11, 0.12, 0.13"
+ColorSchemes = "3"

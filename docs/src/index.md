@@ -2,7 +2,7 @@
 
 This package provides tools for working with color schemes - gradients and color maps - and is designed to work with ColorSchemes.jl.
 
-You can extract colorschemes from images, and replace an image's color scheme with another. There are also functions for creating color schemes from pre-defined lists or Julia functions.
+You can extract colorschemes from images, and replace an image's color scheme with another. There are also functions for creating color schemes from pre-defined lists and Julia functions.
 
 This package relies on:
 

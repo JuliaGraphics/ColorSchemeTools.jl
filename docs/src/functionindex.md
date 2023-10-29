@@ -1,4 +1,6 @@
 # Index
 
-```@index
+```@autodocs
+Modules = [ColorSchemeTools]
+Order   = [:function, :type]
 ```

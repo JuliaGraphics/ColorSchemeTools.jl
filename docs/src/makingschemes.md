@@ -1,44 +1,20 @@
 ```@setup drawscheme
+
+#=
+define:
+
+- draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-levels.svg")
+
+- draw_transparent(cs::ColorScheme, csa::ColorScheme, w=800, h=500, filename="/tmp/transparency-levels.svg")
+
+=# 
 using Luxor, Colors, ColorSchemes, ColorSchemeTools
-
-function draw_transparent(cs::ColorScheme, csa::ColorScheme,
-    w=800, h=500, filename="/tmp/transparency-levels.svg"
-    )
-    Drawing(w, h, filename)
-    origin()
-    background("black")
-    setlinejoin("bevel")
-
-    N = length(csa.colors) * 2
-    h = w ÷ 4
-    backgroundtiles = Tiler(w, h, 4, N, margin=0)
-    setline(0)
-    for (pos, n) in backgroundtiles
-        if iseven(backgroundtiles.currentrow + backgroundtiles.currentcol) 
-            sethue("grey80")
-        else
-            sethue("grey90")
-        end
-        box(backgroundtiles, n, :fillstroke)
-    end
-    referencecolortiles = Tiler(w, h, 2, N ÷ 2, margin=0)
-    for (pos, n) in referencecolortiles[1:N ÷ 2]
-        setcolor(cs[n])
-        box(referencecolortiles, n, :fillstroke)
-    end
-    for (i, (pos, n)) in enumerate(referencecolortiles[N ÷ 2 + 1 : end])
-        setcolor(csa[i])
-        box(referencecolortiles, n, :fillstroke)
-    end
-    finish()
-    nothing
-end
 
 function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-levels.svg")
     # This function is a quick hack to draw swatches and curves in a documenter pass.
     # The diagrams are merely illustrative, not 100% technically precise :(
 
-    Drawing(w, h, filename)
+    dwg = Drawing(w, h, filename)
     origin()
     background("black")
     setlinejoin("bevel")
@@ -106,8 +82,8 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         setline(0.7)
         sethue("green")
         poly(greenline, :stroke)
-        setline(0.4)
-        sethue("grey50")
+        setline(0.6)
+        sethue("grey80")
         poly(alphaline, :stroke)
     end
 
@@ -137,7 +113,7 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         setline(0)
         translate(table[3])
         # draw blend
-        stepping = 0.0005
+        stepping = 0.001
         boxw = panewidth * stepping
         for i in 0:stepping:1
             c = get(cs, i)
@@ -147,37 +123,72 @@ function draw_rgb_levels(cs::ColorScheme, w=800, h=500, filename="/tmp/rgb-level
         end
     end
     finish()
-    nothing
+    return dwg
 end
+
+function draw_transparent(cs::ColorScheme, csa::ColorScheme,
+    w=700, h=500, filename="/tmp/transparency-levels.svg"
+    )
+    dwg = Drawing(w, h, filename)
+    origin()
+    background("black")
+    setlinejoin("bevel")
+
+    N = length(csa.colors) * 2
+    h = w ÷ 4
+    backgroundtiles = Tiler(w, h, 4, N, margin=0)
+    setline(0)
+    for (pos, n) in backgroundtiles
+        if iseven(backgroundtiles.currentrow + backgroundtiles.currentcol) 
+            sethue("grey80")
+        else
+            sethue("grey90")
+        end
+        box(backgroundtiles, n, :fillstroke)
+    end
+    referencecolortiles = Tiler(w, h, 2, N ÷ 2, margin=0)
+    for (pos, n) in referencecolortiles[1:N ÷ 2]
+        setcolor(cs[n])
+        box(referencecolortiles, n, :fillstroke)
+    end
+    for (i, (pos, n)) in enumerate(referencecolortiles[N ÷ 2 + 1 : end])
+        setcolor(csa[i])
+        box(referencecolortiles, n, :fillstroke)
+    end
+    finish()
+    return dwg
+end
+
+```
+# Making colorschemes
+
+!!! note
+
+    The diagrams in this section show: the colors of a colorscheme as individual swatches along the top; the changing RGBA curves in the middle; and a continuously-sampled gradient below.
+
+## Making simple colorschemes
+
+Colors.jl provides a method for `range()` that accepts colorants:
+
+```@example drawscheme
+using ColorSchemes, Colors # hide
+cs = ColorScheme(range(RGB(1, 0, 0), stop = colorant"blue", length=15),
+        "gradient", "red to blue 15")
+draw_rgb_levels(cs, 800, 200, :svg) # hide
 ```
 
-# Making new colorschemes
+You can make a new colorscheme by building an array of colors.
 
-To make new colorschemes, you can quickly build arrays of colors; refer the Colors.jl and ColorSchemes.jl documentation.
-
-Colors.jl provides a method to `range()` that accepts colorants:
-
-```
-using ColorSchemes, Colors
-
-cs = ColorScheme(range(RGB(1, 0, 0), stop = colorant"green", length=15),
-        "gradient", "red to green 15")
-```
-
-The ColorSchemeTools function `make_colorscheme()` lets you build more elaborate colorschemes.
-
-You can supply the color specifications using different methods, depending on the arguments you supply:
+The ColorSchemeTools function [`make_colorscheme()`](@ref) lets you build more elaborate colorschemes. You can supply the color specifications using different methods, depending on the arguments you supply:
 
 - a list of colors and a number specifying the length
 - a dictionary of linear segments
 - an 'indexed list' of RGB values
-- three Julia functions that generate values between 0 and 1 for the RGB levels
-
-The diagrams in this section show: the elements of a colorscheme as individual swatches along the top; the changing RGBA curves in the middle; and a continuously-sampled gradient below.
+- a group of Julia functions that generate values between 0 and 1 for the RGB levels
 
 ## List of colors
 
-Given a list of colors, use `make_colorscheme(list, n)` to create a new colorscheme with `n` steps.
+Given a list of colors, use [`make_colorscheme()`](@ref) to create a new colorscheme with `n` steps.
 
 For example, given an array of various colorants:
 
@@ -206,11 +217,8 @@ roygbiv = [ # hide
     colorant"violet" # hide
 ] # hide
 scheme = make_colorscheme(roygbiv, 10)
-draw_rgb_levels(scheme, 800, 200, "assets/figures/roygbiv-10.svg") # hide
-nothing # hide
+draw_rgb_levels(scheme, 800, 200, :svg) # hide
 ```
-
-!["showing roygbiv 10 colorant list colorscheme"](assets/figures/roygbiv-10.svg)
 
 If you increase the number of steps, the interpolations are smoother. Here it is with 200 steps (shown in the top bar):
 
@@ -225,11 +233,8 @@ roygbiv = [ # hide
     colorant"violet" # hide
 ] # hide
 scheme = make_colorscheme(roygbiv, 200)
-draw_rgb_levels(scheme, 800, 200, "assets/figures/roygbiv-200.svg") # hide
-nothing # hide
+draw_rgb_levels(scheme, 800, 200, :svg)
 ```
-
-!["showing roygbiv colorant list colorscheme"](assets/figures/roygbiv-200.svg)
 
 You can supply the colors in any format, as long as it's a Colorant:
 
@@ -245,20 +250,16 @@ cols = Any[
     colorant"hotpink",
 ]
 scheme = make_colorscheme(cols, 8)
-draw_rgb_levels(scheme, 800, 200, "assets/figures/colorantlist.svg") # hide
-nothing # hide
+draw_rgb_levels(scheme, 800, 200, :svg)
 ```
 
-!["showing colorant list colorscheme"](assets/figures/colorantlist.svg)
-
-The `Any` array was necessary only because of the presence of the `Gray(0..5)` element. If all the elements are colorants, you can use
-`[]` or `Colorant[]`.
+The `Any` array was necessary only because of the presence of the `Gray(0..5)` element. If all the elements are colorants, you can use `[]` or `Colorant[]`.
 
 ## Linearly-segmented colors
 
 A linearly-segmented color dictionary looks like this:
 
-```
+```julia
 cdict = Dict(:red   => ((0.0,  0.0,  0.0),
                         (0.5,  1.0,  1.0),
                         (1.0,  1.0,  1.0)),
@@ -277,7 +278,7 @@ The triplets _aren't_ RGB values... For each channel, the first number in each t
 
 The change of color between point `p1` and `p2` is defined by `b` and `c`:
 
-```
+```julia
 :red => (
          ...,
          (p1, a, b),
@@ -289,12 +290,6 @@ The change of color between point `p1` and `p2` is defined by `b` and `c`:
 If `a` and `b` (or `c` and `d`) aren't the same, the color will abruptly jump. Notice that the very first `a` and the very last `d` aren't used.
 
 To create a new colorscheme from a suitable dictionary in this format, run `make_colorscheme()`.
-
-```
-using Colors, ColorSchemes
-scheme = make_colorscheme(dict)
-```
-
 
 ```@example drawscheme
 cdict = Dict(:red  => ((0.0,  0.0,  0.0),
@@ -308,17 +303,14 @@ cdict = Dict(:red  => ((0.0,  0.0,  0.0),
                        (0.5,  0.0,  0.0),
                        (1.0,  1.0,  1.0))) # hide
 scheme = make_colorscheme(cdict)
-draw_rgb_levels(scheme, 800, 200, "assets/figures/curves.svg") # hide
-nothing # hide
+draw_rgb_levels(scheme, 800, 200, :svg) # hide
 ```
-
-!["showing linear segmented colorscheme"](assets/figures/curves.svg)
 
 ## Indexed-list color schemes
 
 The data to define an 'indexed list' colorscheme looks like this:
 
-```
+```julia
 terrain = (
            (0.00, (0.2, 0.2,  0.6)),
            (0.15, (0.0, 0.6,  1.0)),
@@ -346,19 +338,16 @@ terrain_data = (
         (0.75, (0.5, 0.36, 0.33)),
         (1.00, (1.0, 1.0, 1.0)))
 terrain = make_colorscheme(terrain_data, length = 50)
-draw_rgb_levels(terrain, 800, 200, "assets/figures/terrain.svg") # hide
-nothing # hide
+draw_rgb_levels(terrain, 800, 200, :svg)
 ```
-
-!["indexed lists scheme"](assets/figures/terrain.svg)
 
 ## Functional color schemes
 
-The colors in a 'functional' colorscheme are produced by three functions that calculate the color values at each point on the colorscheme.
+The colors in a ‘functional’ colorscheme are produced by three functions that calculate the color values at each point on the colorscheme.
 
-The `make_colorscheme()` function applies the first supplied function at each point on the colorscheme for the red values, the second function for the green values, and the third for the blue. You can use defined functions or supply anonymous ones.
+The [`make_colorscheme()`](@ref) function applies the first supplied function at each point on the colorscheme for the red values, the second function for the green values, and the third for the blue. You can use defined functions or supply anonymous ones.
 
-Values produced by the functions are clamped to 0.0 and 1.0 before they're converted to RGB values.
+Values produced by the functions are clamped to 0.0 and 1.0 before they’re converted to RGB values.
 
 ### Examples
 
@@ -366,19 +355,15 @@ The first example returns a smooth black to white gradient, because the `identit
 
 ```@example drawscheme
 fscheme = make_colorscheme(identity, identity, identity)
-draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme1.svg") # hide
-nothing # hide
+draw_rgb_levels(fscheme, 800, 200, :svg)
 ```
-!["functional color schemes"](assets/figures/funcscheme1.svg)
 
 The next example uses the `sin()` function on values from 0 to π to control the red, and the `cos()` function from 0 to π to control the blue. The green channel is flat-lined.
 
 ```@example drawscheme
 fscheme = make_colorscheme(n -> sin(n*π), n -> 0, n -> cos(n*π))
-draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme2.svg") # hide
-nothing # hide
+draw_rgb_levels(fscheme, 800, 200, :svg)
 ```
-!["functional color schemes"](assets/figures/funcscheme2.svg)
 
 You can generate stepped gradients by controlling the numbers. Here, each point on the scheme is nudged to the nearest multiple of 0.1.
 
@@ -387,19 +372,15 @@ fscheme = make_colorscheme(
         n -> round(n, digits=1),
         n -> round(n, digits=1),
         n -> round(n, digits=1), length=10)
-draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme3.svg") # hide
-nothing # hide
+draw_rgb_levels(fscheme, 800, 200, :svg)
 ```
-!["functional color schemes"](assets/figures/funcscheme3.svg)
 
 The next example sinusoidally sends the red channel from black to red and back again.
 
 ```@example drawscheme
 fscheme = make_colorscheme(n -> sin(n * π), n -> 0, n -> 0)
-draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme4.svg") # hide
-nothing # hide
+draw_rgb_levels(fscheme, 800, 200, :svg)
 ```
-!["functional color schemes"](assets/figures/funcscheme4.svg)
 
 The next example produces a striped colorscheme as the rippling sine waves continually change phase:
 
@@ -408,10 +389,8 @@ ripple7(n)  = sin(π * 7n)
 ripple13(n) = sin(π * 13n)
 ripple17(n) = sin(π * 17n)
 fscheme = make_colorscheme(ripple7, ripple13, ripple17, length=80)
-draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme5.svg") # hide
-nothing # hide
+draw_rgb_levels(fscheme, 800, 200, :svg)
 ```
-!["functional color schemes"](assets/figures/funcscheme5.svg)
 
 If you're creating a scheme by generating LCHab colors, your functions should convert values between 0 and 1 to values between 0 and 100 (luminance and chroma) or 0 to 360 (hue).
 
@@ -422,16 +401,13 @@ f2(n) = 50 + 20(0.5 - abs(n - 0.5))
 fscheme = make_colorscheme(n -> 50, f2, f1,
     length=80,
     model=:LCHab)
-draw_rgb_levels(fscheme, 800, 200, "assets/figures/funcscheme6.svg") # hide
-nothing # hide
+draw_rgb_levels(fscheme, 800, 200, :svg)
 ```
 
-!["functional color schemes"](assets/figures/funcscheme6.svg)
-
-## Changing alpha opacity of colorschemes
+## Alpha opacity colorschemes
 
 Usually, colorschemes are RGB values with no alpha values.
-Use `add_alpha()` to add alpha opacity values to colorschemes. 
+Use [`add_alpha()`](@ref) to add alpha opacity values to the colors in the colorschemes. 
 
 In the illustrations, the top row shows the original colorscheme, the bottom row shows the modified colorscheme drawn over a checkerboard pattern to show the alpha opacity.
 
@@ -440,35 +416,36 @@ You can make a new colorscheme where every color now has a specific alpha opacit
 ```@example drawscheme
 cs = ColorSchemes.PRGn_10
 csa = add_alpha(cs, 0.8)
-draw_transparent(cs, csa, 800, 200, "assets/figures/funcscheme7.svg") # hide
-nothing # hide
+draw_transparent(cs, csa, 800, 200, :svg) # hide
 ```
-
-!["functional color schemes"](assets/figures/funcscheme7.svg)
+```@example drawscheme
+cs = ColorSchemes.PRGn_10 # hide
+csa = add_alpha(cs, 0.8)  # hide
+draw_rgb_levels(csa, 800, 200, :svg) # hide
+```
 
 You can specify alpha values using a range:
 
 ```@example drawscheme
 cs = ColorSchemes.lisbon10
 csa = add_alpha(cs, 0.3:0.1:1.0)
-draw_transparent(cs, csa, 800, 200, "assets/figures/funcscheme8.svg") # hide
-nothing # hide
+draw_transparent(cs, csa, 800, 200, :svg)  # hide
 ```
-
-!["functional color schemes"](assets/figures/funcscheme8.svg)
+```@example drawscheme
+cs = ColorSchemes.lisbon10 # hide
+csa = add_alpha(cs, 0.3:0.1:1.0) # hide
+draw_rgb_levels(csa, 800, 200, :svg) # hide
+```
 
 Or you can specify alpha values using a function that returns a value for every value between 0 and 1. In the next example the opacity varies from 1.0 to 0.0 and back to 1.0 again, as the colorscheme index goes from 0 to 1; at point 0.5, `abs(cos(0.5 * π))` is 0.0, so the colorscheme is completely transparent at that point.
 
 ```@example drawscheme
 cs = ColorSchemes.PuOr
 csa = add_alpha(cs, (n) -> abs(cos(n * π)))
-draw_transparent(cs, csa, 800, 200, "assets/figures/funcscheme9.svg") # hide
-nothing # hide
+draw_transparent(cs, csa, 700, 200, :svg)
 ```
-
-!["functional color schemes"](assets/figures/funcscheme9.svg)
-
-```@docs
-make_colorscheme
-add_alpha
+```@example drawscheme
+cs = ColorSchemes.PuOr # hide
+csa = add_alpha(cs, (n) -> abs(cos(n * π))) # hide
+draw_rgb_levels(csa, 800, 200, :svg) # hide
 ```

@@ -4,7 +4,7 @@
 
 It's possible to convert an image using one color scheme to use another.
 
-`convert_to_scheme(cscheme, img)` returns a new image in which each pixel from the provided image is mapped to its closest matching color in the provided scheme. See ColorSchemes's `getinverse()` function for more details on how this works.
+The function [`convert_to_scheme()`](@ref) returns a new image in which each pixel from the provided image is mapped to its closest matching color in the provided scheme. See ColorSchemes's `getinverse()` function for more details on how this works.
 
 In the following figure, the Julia logo is converted to use a ColorScheme with no black or white:
 
@@ -23,6 +23,3 @@ save("converted.png", convertedimage)
 
 Notice how the white was matched by the color right at the boundary of the light purple and pale green.
 
-```@docs
-convert_to_scheme
-```

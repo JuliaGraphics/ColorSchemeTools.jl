@@ -11,12 +11,12 @@ makedocs(
         collapselevel=1,
     ),
     pages = [
-    "Introduction"             => "index.md",
-    "Tools"                    => "tools.md",
-    "Converting image colors"  => "convertingimages.md",
-    "Making colorschemes"      => "makingschemes.md",
-    "Saving colorschemes"      => "output.md",
-    "Index"                    => "functionindex.md"
+    "Introduction"               => "index.md",
+    "Tools"                      => "tools.md",
+    "Converting image colors"    => "convertingimages.md",
+    "Making colorschemes"        => "makingschemes.md",
+    "Saving colorschemes"        => "output.md",
+    "Alphabetical function list" => "functionindex.md"
     ]
     )
 
