@@ -1,11 +1,13 @@
 using Test, ColorSchemes, ColorSchemeTools, FileIO, Colors
-using ImageMagick
+using Aqua
 
 @static if Sys.isapple()
     using QuartzImageIO
 end
 
 function run_all_tests()
+
+    # Aqua.test_all(ColorSchemeTools) # too many ImageCore errors for now
 
     @testset "basic functions" begin
         # load existing scheme from ColorSchemes.jl
@@ -127,6 +129,9 @@ function run_all_tests()
         end
     end
 
+    @testset "equalize tests" begin
+        include("equalize-tests.jl")
+    end
 end
 
 function run_minimum_tests()

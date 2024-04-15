@@ -1,15 +1,16 @@
 """
 This package provides some tools for working with ColorSchemes:
 
-- `colorscheme_to_image()`: make an image from a colorscheme
-- `colorscheme_to_text()`: save scheme as Julia code in text file
-- `colorscheme_weighted()`: make new colorscheme from scheme and weights
-- `convert_to_scheme()`: convert image to use only colorscheme colors
-- `extract_weighted_colors()`: obtain colors weighted scheme from image
-- `extract()`: obtain colors from image
-- `image_to_swatch()`: extract scheme and save as swatch file
-- `make_colorscheme()`: make new scheme
-- `sortcolorscheme()`: sort scheme using color model
+  - `colorscheme_to_image()`: make an image from a colorscheme
+  - `colorscheme_to_text()`: save scheme as Julia code in text file
+  - `colorscheme_weighted()`: make new colorscheme from scheme and weights
+  - 'equalize()`
+  - `convert_to_scheme()`: convert image to use only colorscheme colors
+  - `extract_weighted_colors()`: obtain colors weighted scheme from image
+  - `extract()`: obtain colors from image
+  - `image_to_swatch()`: extract scheme and save as swatch file
+  - `make_colorscheme()`: make new scheme
+  - `sortcolorscheme()`: sort scheme using color model
 """
 module ColorSchemeTools
 
@@ -17,16 +18,21 @@ using Images, ColorSchemes, Colors, Clustering, FileIO, Interpolations
 
 import Base.get
 
+include("utils.jl")
+include("equalize.jl")
+
 export
     colorscheme_to_image,
     colorscheme_to_text,
     colorscheme_weighted,
     compare_colors,
+    equalize,
     extract,
     extract_weighted_colors,
     convert_to_scheme,
     image_to_swatch,
     sortcolorscheme,
+    sineramp,
     make_colorscheme,
     add_alpha,
     get_linear_segment_color,
@@ -41,7 +47,7 @@ probably should) shrink larger images before running this function.
 
 Returns a ColorScheme.
 """
-function extract(imfile, n=10, i=10, tolerance=0.01; kwargs...)
+function extract(imfile, n = 10, i = 10, tolerance = 0.01; kwargs...)
     ewc = extract_weighted_colors(imfile, n, i, tolerance; kwargs...)[1] # throw away the weights
     return ewc
 end
@@ -58,7 +64,7 @@ Example:
 pal, wts = extract_weighted_colors(imfile, n, i, tolerance; shrink = 2)
 ```
 """
-function extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink=2.0)
+function extract_weighted_colors(imfile, n = 10, i = 10, tolerance = 0.01; shrink = 2.0)
     img = load(imfile)
     # TODO this is the wrong way to do errors I'm told
     (!@isdefined img) && error("Can't load the image file \"$imfile\"")
@@ -72,10 +78,10 @@ function extract_weighted_colors(imfile, n=10, i=10, tolerance=0.01; shrink=2.0)
     !any(n -> n == 3, size(imdata)) && error("Image file \"$imfile\" doesn't have three color channels; perhaps it has an alpha channel as well?")
 
     d = reshape(imdata, 3, :)
-    R = kmeans(d, n, maxiter=i, tol=tolerance)
+    R = kmeans(d, n, maxiter = i, tol = tolerance)
     cols = RGB{Float64}[]
     for i in 1:3:length(R.centers)
-        push!(cols, RGB(R.centers[i], R.centers[i+1], R.centers[i+2]))
+        push!(cols, RGB(R.centers[i], R.centers[i + 1], R.centers[i + 2]))
     end
     # KmeansResult::cweights is deprecated, use wcounts(clu::KmeansResult) as of Clustering v0.13.2
     return ColorScheme(cols), wcounts(R) / sum(wcounts(R))
@@ -95,7 +101,7 @@ colorscheme_weighted(extract_weighted_colors("hokusai.jpg")...)
 colorscheme_weighted(extract_weighted_colors("filename00000001.jpg")..., 500)
 ```
 """
-function colorscheme_weighted(cscheme::ColorScheme, weights, l=50)
+function colorscheme_weighted(cscheme::ColorScheme, weights, l = 50)
     iweights = map(n -> convert(Integer, round(n * l)), weights)
     #   adjust highest or lowest so that length of result is exact
     while sum(iweights) < l
@@ -120,7 +126,7 @@ Compare two colors, using the Luv colorspace. `field` defaults to luminance `:l`
 but could be `:u` or `:v`. Return true if the specified field of `color_a` is
 less than `color_b`.
 """
-function compare_colors(color_a, color_b, field=:l)
+function compare_colors(color_a, color_b, field = :l)
     if 1 < color_a.r < 255
         fac = 255
     else
@@ -142,8 +148,8 @@ The default is to sort by the luminance field `:l` but could be by `:u` or `:v`.
 
 Returns a new ColorScheme.
 """
-function sortcolorscheme(colorscheme::ColorScheme, field=:l; kwargs...)
-    cols = sort(colorscheme.colors, lt=(x, y) -> compare_colors(x, y, field); kwargs...)
+function sortcolorscheme(colorscheme::ColorScheme, field = :l; kwargs...)
+    cols = sort(colorscheme.colors, lt = (x, y) -> compare_colors(x, y, field); kwargs...)
     return ColorScheme(cols)
 end
 
@@ -179,12 +185,12 @@ save("/tmp/cs_image.png", img)
 save("/tmp/blackbody.png", colorscheme_to_image(ColorSchemes.blackbody, 10, 100))
 ```
 """
-function colorscheme_to_image(cs::ColorScheme, nrows=50, tilewidth=5)
+function colorscheme_to_image(cs::ColorScheme, nrows = 50, tilewidth = 5)
     ncols = tilewidth * length(cs)
     a = Array{RGB{Float64}}(undef, nrows, ncols)
     for row in 1:nrows
         for col in 1:ncols
-            a[row, col] = cs.colors[div(col - 1, tilewidth)+1]
+            a[row, col] = cs.colors[div(col - 1, tilewidth) + 1]
         end
     end
     return a
@@ -207,8 +213,8 @@ image_to_swatch("monalisa.jpg", 10, "/tmp/monalisaswatch.png")
 ```
 """
 function image_to_swatch(imagefilepath, n::Int64, destinationpath;
-    nrows=50,
-    tilewidth=5)
+    nrows = 50,
+    tilewidth = 5)
     tempcs = sortcolorscheme(extract(imagefilepath, n))
     img = colorscheme_to_image(tempcs, nrows, tilewidth)
     save(destinationpath, img)
@@ -240,8 +246,8 @@ include("/tmp/the_lost_vermeer.jl")
 ```
 """
 function colorscheme_to_text(cs::ColorScheme, schemename::String, file::String;
-    category="",
-    notes="")
+    category = "",
+    notes = "")
     fhandle = open(file, "w")
     write(fhandle, string("loadcolorscheme(:$(schemename), [\n"))
     for c in cs.colors
@@ -274,8 +280,7 @@ cdict = Dict(:red  => ((0.0,  0.0,  0.0),
 
 The value of RGB component at every value of `n` is defined by a set of tuples.
 In each tuple, the first number is `x`. Colors are linearly interpolated in
-bands between consecutive values of `x`; if the first tuple is given by `(Z, A,
-B)` and the second tuple by `(X, C, D)`, the color of a point `n` between Z and
+bands between consecutive values of `x`; if the first tuple is given by `(Z, A, B)` and the second tuple by `(X, C, D)`, the color of a point `n` between Z and
 X will be given by `(n - Z) / (X - Z) * (C - B) + B`.
 
 For example, given an entry like this:
@@ -288,7 +293,6 @@ For example, given an entry like this:
 
 and if `n` = 0.75, we return 1.0; 0.75 is between the second and third segments,
 but we'd already reached 1.0 (segment 2) when `n` was 0.5.
-
 """
 function get_linear_segment_color(dict, n)
     result = Float64[]
@@ -323,7 +327,7 @@ ColorSchemeTools.lerp(128, 0, 256)
 0.5
 ```
 """
-function lerp(x, from_min, from_max, to_min=0.0, to_max=1.0)
+function lerp(x, from_min, from_max, to_min = 0.0, to_max = 1.0)
     if !isapprox(from_max, from_min)
         return ((x - from_min) / (from_max - from_min)) * (to_max - to_min) + to_min
     else
@@ -375,7 +379,7 @@ function get_indexed_list_color(indexedlist, n)
                 (0.7, (0.00, 0.00, 1.00)),
                 (0.9, (1.00, 0.00, 1.00)),
                 (1.0, (1.00, 0.00, 0.75))
-            )"))    
+            )"))
     end
 
     if length(stops) != length(rgbvalues)
@@ -425,11 +429,11 @@ Make a new ColorScheme from a dictionary of linear-segment information. Calls
 `get_linear_segment_color(dict, n)` with `n` for every `length` value between 0 and 1.
 """
 function make_colorscheme(dict::Dict;
-    length=100,
-    category="",
-    notes="")
+    length = 100,
+    category = "",
+    notes = "")
     cs = ColorScheme([RGB(get_linear_segment_color(dict, i)...)
-                      for i in range(0, stop=1, length=length)],
+                      for i in range(0, stop = 1, length = length)],
         category, notes)
     return cs
 end
@@ -456,16 +460,17 @@ gist_rainbow = (
 
 make_colorscheme(gist_rainbow)
 ```
+
 The first element of each item is the point on the colorscheme.
 
 Use `length` keyword to set the number of colors in the colorscheme.
 """
 function make_colorscheme(indexedlist::Tuple;
-    length=length(indexedlist),
-    category="",
-    notes="indexed list")
+    length = length(indexedlist),
+    category = "",
+    notes = "indexed list")
     cs = ColorScheme([RGB(get_indexed_list_color(indexedlist, i)...)
-                      for i in range(0, stop=1, length=length)],
+                      for i in range(0, stop = 1, length = length)],
         category, notes)
     return cs
 end
@@ -488,21 +493,21 @@ Use `length` keyword to set the number of colors in the colorscheme.
 The default color model is `:RGB`, and the functions should return values in the
 appropriate range:
 
-- f1 - [0.0 - 1.0]   - red
-- f2 - [0.0 - 1.0]   - green
-- f3 - [0.0 - 1.0]   - blue
+  - f1 - [0.0 - 1.0]   - red
+  - f2 - [0.0 - 1.0]   - green
+  - f3 - [0.0 - 1.0]   - blue
 
 For the `:HSV` color model:
 
-- f1 - [0.0 - 360.0] - hue
-- f2 - [0.0 - 1.0]   - saturataion
-- f3 - [0.0 - 1.0]   - value (brightness)
+  - f1 - [0.0 - 360.0] - hue
+  - f2 - [0.0 - 1.0]   - saturataion
+  - f3 - [0.0 - 1.0]   - value (brightness)
 
 For the `:LCHab` color model:
 
-- f1 - [0.0 - 100.0] - luminance
-- f2 - [0.0 - 100.0] - chroma
-- f3 - [0.0 - 360.0] - hue
+  - f1 - [0.0 - 100.0] - luminance
+  - f2 - [0.0 - 100.0] - chroma
+  - f3 - [0.0 - 360.0] - hue
 
 ### Example
 
@@ -515,10 +520,10 @@ make_colorscheme(n -> sin(n * π), n -> 0, n -> cos(n * π))
 ```
 """
 function make_colorscheme(f1::Function, f2::Function, f3::Function;
-        model=:RGB,
-        length=100,
-        category="",
-        notes="functional ColorScheme")
+    model = :RGB,
+    length = 100,
+    category = "",
+    notes = "functional ColorScheme")
     # output is always RGB for the moment
     cs = RGB[]
     if model == :LCHab
@@ -535,7 +540,7 @@ function make_colorscheme(f1::Function, f2::Function, f3::Function;
         clamp3 = (0.0, 1.0) #
     end
     counter = 0
-    for i in range(0.0, stop=1.0, length=length)
+    for i in range(0.0, stop = 1.0, length = length)
         final1 = clamp(f1(i), clamp1...)
         final2 = clamp(f2(i), clamp2...)
         final3 = clamp(f3(i), clamp3...)
@@ -568,43 +573,40 @@ Use `length` keyword to set the number of colors in the colorscheme.
 The default color mo            del is `:RGBA`, and the functions should return values in the
 appropriate range:
 
-- f1 - [0.0 - 1.0]   - red
-- f2 - [0.0 - 1.0]   - green
-- f3 - [0.0 - 1.0]   - blue
-- f4 - [0.0 - 1.0]   - alpha
+  - f1 - [0.0 - 1.0]   - red
+  - f2 - [0.0 - 1.0]   - green
+  - f3 - [0.0 - 1.0]   - blue
+  - f4 - [0.0 - 1.0]   - alpha
 
 For the `:HSVA` color model:
 
-- f1 - [0.0 - 360.0] - hue
-- f2 - [0.0 - 1.0]   - saturataion
-- f3 - [0.0 - 1.0]   - value (brightness)
-- f4 - [0.0 - 1.0]   - alpha
+  - f1 - [0.0 - 360.0] - hue
+  - f2 - [0.0 - 1.0]   - saturataion
+  - f3 - [0.0 - 1.0]   - value (brightness)
+  - f4 - [0.0 - 1.0]   - alpha
 
 For the `:LCHabA` color model:
 
-- f1 - [0.0 - 100.0] - luminance
-- f2 - [0.0 - 100.0] - chroma
-- f3 - [0.0 - 360.0] - hue
-- f4 - [0.0 - 1.0]   - alpha
+  - f1 - [0.0 - 100.0] - luminance
+  - f2 - [0.0 - 100.0] - chroma
+  - f3 - [0.0 - 360.0] - hue
+  - f4 - [0.0 - 1.0]   - alpha
 
 ## Examples
 
-
-
 ```julia
 csa = make_colorscheme1(
-    n -> red(get(ColorSchemes.leonardo, n)), 
-    n -> green(get(ColorSchemes.leonardo, n)), 
-    n -> blue(get(ColorSchemes.leonardo, n)), 
+    n -> red(get(ColorSchemes.leonardo, n)),
+    n -> green(get(ColorSchemes.leonardo, n)),
+    n -> blue(get(ColorSchemes.leonardo, n)),
     n -> 1 - identity(n))
-
 ```
 """
 function make_colorscheme(f1::Function, f2::Function, f3::Function, f4::Function;
-        model=:RGBA,
-        length=100,
-        category="",
-        notes="functional ColorScheme")
+    model = :RGBA,
+    length = 100,
+    category = "",
+    notes = "functional ColorScheme")
     # output is always RGBA
     cs = RGBA[]
     if model == :LCHabA
@@ -624,7 +626,7 @@ function make_colorscheme(f1::Function, f2::Function, f3::Function, f4::Function
         clamp4 = (0.0, 1.0)
     end
     counter = 0
-    for i in range(0.0, stop=1.0, length=length)
+    for i in range(0.0, stop = 1.0, length = length)
         final1 = clamp(f1(i), clamp1...)
         final2 = clamp(f2(i), clamp2...)
         final3 = clamp(f3(i), clamp3...)
@@ -648,23 +650,22 @@ Make a new colorscheme consisting of the colors in the array `colorlist`.
 ```
 make_colorscheme([RGB(1, 0, 0), HSB(285, 0.7, 0.7), colorant"darkslateblue"], 20)
 ```
-
 """
 function make_colorscheme(colorlist::Array, steps)
     colorlist_rgb = convert.(RGB, colorlist)
     reds = convert.(Float64, getfield.(colorlist_rgb, :r))
     greens = convert.(Float64, getfield.(colorlist_rgb, :g))
     blues = convert.(Float64, getfield.(colorlist_rgb, :b))
-    rednodes = (range(0.0, 1.0, length=length(reds)),)
-    greennodes = (range(0.0, 1.0, length=length(greens)),)
-    bluenodes = (range(0.0, 1.0, length=length(blues)),)
+    rednodes = (range(0.0, 1.0, length = length(reds)),)
+    greennodes = (range(0.0, 1.0, length = length(greens)),)
+    bluenodes = (range(0.0, 1.0, length = length(blues)),)
 
     reditp = interpolate(rednodes, reds, Gridded(Linear()))
     greenitp = interpolate(greennodes, greens, Gridded(Linear()))
     blueitp = interpolate(bluenodes, blues, Gridded(Linear()))
 
     colors = Color[]
-    for i in range(0, 1, length=steps)
+    for i in range(0, 1, length = steps)
         push!(colors, RGB(reditp(i), greenitp(i), blueitp(i)))
     end
     return ColorScheme(colors, "interpolated gradient", "$steps")
@@ -684,16 +685,16 @@ opacity 0.5
 add_alpha(ColorSchemes.PuOr, 0.5)
 ```
 """
-function add_alpha(cs::ColorScheme, alpha::Real=0.5)
+function add_alpha(cs::ColorScheme, alpha::Real = 0.5)
     return make_colorscheme(
         n -> red(get(cs, n)),
         n -> green(get(cs, n)),
         n -> blue(get(cs, n)),
         n -> alpha,
-        model=:RGBA,
-        length=length(cs.colors),
-        category=cs.category,
-        notes=cs.notes * " with alpha"
+        model = :RGBA,
+        length = length(cs.colors),
+        category = cs.category,
+        notes = cs.notes * " with alpha",
     )
 end
 
@@ -714,19 +715,19 @@ add_alpha(ColorSchemes.PuOr, [1.0, 0.0])
 ```
 """
 function add_alpha(cs::ColorScheme, alpha::Vector)
-    alphanodes = (range(0, 1, length=length(alpha)),)
-    itpalpha = interpolate(alphanodes, 
-        range(alpha[1], alpha[end], length=length(alpha)), 
+    alphanodes = (range(0, 1, length = length(alpha)),)
+    itpalpha = interpolate(alphanodes,
+        range(alpha[1], alpha[end], length = length(alpha)),
         Gridded(Linear()))
     return make_colorscheme(
         n -> red(get(cs, n)),
         n -> green(get(cs, n)),
         n -> blue(get(cs, n)),
         n -> itpalpha(n),
-        model=:RGBA,
-        length=length(cs.colors),
-        category=cs.category,
-        notes=cs.notes * " with alpha"
+        model = :RGBA,
+        length = length(cs.colors),
+        category = cs.category,
+        notes = cs.notes * " with alpha",
     )
 end
 
@@ -745,7 +746,7 @@ taking values between 0.5 and 1.0.
 add_alpha(ColorSchemes.PuOr, 0.5:0.1:1.0)
 ```
 """
-function add_alpha(cs::ColorScheme, r::T where T <: AbstractRange)
+function add_alpha(cs::ColorScheme, r::T where {T<:AbstractRange})
     if length(r) == 1
         throw(error("add_alpha: range $(r) should be have more than one step."))
     end
@@ -774,10 +775,10 @@ function add_alpha(cs::ColorScheme, f::Function)
         n -> green(get(cs, n)),
         n -> blue(get(cs, n)),
         n -> f(n),
-        model=:RGBA,
-        length=length(cs.colors),
-        category=cs.category,
-        notes=cs.notes * " with alpha"
+        model = :RGBA,
+        length = length(cs.colors),
+        category = cs.category,
+        notes = cs.notes * " with alpha",
     )
 end
 

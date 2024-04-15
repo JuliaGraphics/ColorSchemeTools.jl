@@ -1,5 +1,6 @@
 ```@meta
 DocTestSetup = quote
+    include("displayschemes.jl")
     using ColorSchemes, ColorSchemeTools, Colors
 end
 ```
@@ -37,7 +38,7 @@ ColorSchemes.ColorScheme(ColorTypes.RGB{Float64}[
     ], "", "")
 ```
 
-(Extracting color schemes from images may require you to install image importing and exporting abilities. These are platform-specific. On Linux/UNIX, ImageMagick.jl can be used for importing and exporting images. Use QuartzImageIO.jl on macOS.)
+(Extracting color schemes from images may require you to install image importing and exporting abilities. These are platform-specific.)
 
 ## Sorting color schemes
 

@@ -1,6 +1,22 @@
 # Changelog
 
-## [v1.5.0] - 
+## [v1.6.0] - forthcoming
+
+### Added
+
+- `equalize()` and some other functions from PerceptualColorMaps.jl
+
+### Changed
+
+- Interpolations.jl compatibility
+
+- Julia v1.9
+
+### Removed
+
+### Deprecated
+
+## [v1.5.0] - 30 October 2023
 
 ### Added
 

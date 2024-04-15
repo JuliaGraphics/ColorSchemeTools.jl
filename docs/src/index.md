@@ -12,7 +12,7 @@ This package relies on:
 - [Clustering.jl](https://github.com/JuliaStats/Clustering.jl)
 - [Interpolations.jl](https://github.com/JuliaMath/Interpolations.jl)
 
-and you might need image-capable Julia packages such as ImageMagick.jl or QuartzImageIO.jl installed, depending on the OS.
+and you might need image-capable Julia packages installed, depending on the OS.
 
 ## Installation and basic usage
 

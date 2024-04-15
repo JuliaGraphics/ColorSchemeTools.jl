@@ -16,6 +16,7 @@ makedocs(
     "Converting image colors"    => "convertingimages.md",
     "Making colorschemes"        => "makingschemes.md",
     "Saving colorschemes"        => "output.md",
+    "Equalizing colorschemes"    => "equalizing.md",
     "Alphabetical function list" => "functionindex.md"
     ]
     )
