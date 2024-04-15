@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Equalizing colorschemes · ColorSchemeTools</title><meta name="title" content="Equalizing colorschemes · ColorSchemeTools"/><meta property="og:title" content="Equalizing colorschemes · ColorSchemeTools"/><meta property="twitter:title" content="Equalizing colorschemes · ColorSchemeTools"/><meta name="description" content="Documentation for ColorSchemeTools."/><meta property="og:description" content="Documentation for ColorSchemeTools."/><meta property="twitter:description" content="Documentation for ColorSchemeTools."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/colorschemetools-docs.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="ColorSchemeTools logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">ColorSchemeTools</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../convertingimages/">Converting image colors</a></li><li><a class="tocitem" href="../makingschemes/">Making colorschemes</a></li><li><a class="tocitem" href="../output/">Saving colorschemes</a></li><li class="is-active"><a class="tocitem" href>Equalizing colorschemes</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Testing-a-colorscheme-with-sineramp()"><span>Testing a colorscheme with <code>sineramp()</code></span></a></li><li class="toplevel"><a class="tocitem" href="#Options-for-equalize()"><span>Options for <code>equalize()</code></span></a></li><li><a class="tocitem" href="#Formulae"><span>Formulae</span></a></li><li class="toplevel"><a class="tocitem" href="#The-Weighting-vector-W"><span>The Weighting vector W</span></a></li><li class="toplevel"><a class="tocitem" href="#Smoothing-parameter-sigma"><span>Smoothing parameter sigma</span></a></li></ul></li><li><a class="tocitem" href="../functionindex/">Alphabetical function list</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Equalizing colorschemes</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Equalizing colorschemes</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGraphics/ColorSchemeTools.jl/blob/master/docs/src/equalizing.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Equalizing-color-constrasts"><a class="docs-heading-anchor" href="#Equalizing-color-constrasts">Equalizing color constrasts</a><a id="Equalizing-color-constrasts-1"></a><a class="docs-heading-anchor-permalink" href="#Equalizing-color-constrasts" title="Permalink"></a></h1><p>The <code>equalize()</code> function equalizes the contrasts between colors of a colorscheme.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>This function is derived from the work of Peter Kovesi in  <a href="https://github.com/peterkovesi/PerceptualColourMaps.jl">PerceptualColorMaps</a>. You can find the original code there. It&#39;s copied here because Peter has retired from coding, and the package is not being maintained.</p></div></div><p>In the following example, the first image is the original colorscheme sampled 101 times. The second image shows the colors after they&#39;ve been passed through <code>equalize()</code>.</p><pre><code class="language-julia hljs">cs = ColorScheme([colorant&quot;yellow&quot;, colorant&quot;red&quot;]) 
+# sample 
+origcolors = get(cs, 0:0.01:1)
+# return a new colorscheme based on the colors in cs 
+newcs = equalize(origcolors) 
+# sample
+newcolors = get(newcs, 0:0.01:1)</code></pre><img src='data:image/svg+xml;utf-8,<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+     width="180mm" height="25mm"
+     viewBox="0 0 101 1" preserveAspectRatio="none"
+     shape-rendering="crispEdges" stroke="none">
+<rect width="1" height=".96" x="0" y="0" fill="%23FFFF00" />
+<rect width="1" height=".96" x="1" y="0" fill="%23FFFC00" />
+<rect width="1" height=".96" x="2" y="0" fill="%23FFFA00" />
+<rect width="1" height=".96" x="3" y="0" fill="%23FFF700" />
+<rect width="1" height=".96" x="4" y="0" fill="%23FFF500" />
+<rect width="1" height=".96" x="5" y="0" fill="%23FFF200" />
+<rect width="1" height=".96" x="6" y="0" fill="%23FFF000" />
+<rect width="1" height=".96" x="7" y="0" fill="%23FFED00" />
+<rect width="1" height=".96" x="8" y="0" fill="%23FFEB00" />
+<rect width="1" height=".96" x="9" y="0" fill="%23FFE800" />
+<rect width="1" height=".96" x="10" y="0" fill="%23FFE500" />
+<rect width="1" height=".96" x="11" y="0" fill="%23FFE300" />
+<rect width="1" height=".96" x="12" y="0" fill="%23FFE000" />
+<rect width="1" height=".96" x="13" y="0" fill="%23FFDE00" />
+<rect width="1" height=".96" x="14" y="0" fill="%23FFDB00" />
+<rect width="1" height=".96" x="15" y="0" fill="%23FFD900" />
+<rect width="1" height=".96" x="16" y="0" fill="%23FFD600" />
+<rect width="1" height=".96" x="17" y="0" fill="%23FFD400" />
+<rect width="1" height=".96" x="18" y="0" fill="%23FFD100" />
+<rect width="1" height=".96" x="19" y="0" fill="%23FFCF00" />
+<rect width="1" height=".96" x="20" y="0" fill="%23FFCC00" />
+<rect width="1" height=".96" x="21" y="0" fill="%23FFC900" />
+<rect width="1" height=".96" x="22" y="0" fill="%23FFC700" />
+<rect width="1" height=".96" x="23" y="0" fill="%23FFC400" />
+<rect width="1" height=".96" x="24" y="0" fill="%23FFC200" />
+<rect width="1" height=".96" x="25" y="0" fill="%23FFBF00" />
+<rect width="1" height=".96" x="26" y="0" fill="%23FFBD00" />
+<rect width="1" height=".96" x="27" y="0" fill="%23FFBA00" />
+<rect width="1" height=".96" x="28" y="0" fill="%23FFB800" />
+<rect width="1" height=".96" x="29" y="0" fill="%23FFB500" />
+<rect width="1" height=".96" x="30" y="0" fill="%23FFB200" />
+<rect width="1" height=".96" x="31" y="0" fill="%23FFB000" />
+<rect width="1" height=".96" x="32" y="0" fill="%23FFAD00" />
+<rect width="1" height=".96" x="33" y="0" fill="%23FFAB00" />
+<rect width="1" height=".96" x="34" y="0" fill="%23FFA800" />
+<rect width="1" height=".96" x="35" y="0" fill="%23FFA600" />
+<rect width="1" height=".96" x="36" y="0" fill="%23FFA300" />
+<rect width="1" height=".96" x="37" y="0" fill="%23FFA100" />
+<rect width="1" height=".96" x="38" y="0" fill="%23FF9E00" />
+<rect width="1" height=".96" x="39" y="0" fill="%23FF9C00" />
+<rect width="1" height=".96" x="40" y="0" fill="%23FF9900" />
+<rect width="1" height=".96" x="41" y="0" fill="%23FF9600" />
+<rect width="1" height=".96" x="42" y="0" fill="%23FF9400" />
+<rect width="1" height=".96" x="43" y="0" fill="%23FF9100" />
+<rect width="1" height=".96" x="44" y="0" fill="%23FF8F00" />
+<rect width="1" height=".96" x="45" y="0" fill="%23FF8C00" />
+<rect width="1" height=".96" x="46" y="0" fill="%23FF8A00" />
+<rect width="1" height=".96" x="47" y="0" fill="%23FF8700" />
+<rect width="1" height=".96" x="48" y="0" fill="%23FF8500" />
+<rect width="1" height=".96" x="49" y="0" fill="%23FF8200" />
+<rect width="1" height=".96" x="50" y="0" fill="%23FF8000" />
+<rect width="1" height=".96" x="51" y="0" fill="%23FF7D00" />
+<rect width="1" height=".96" x="52" y="0" fill="%23FF7A00" />
+<rect width="1" height=".96" x="53" y="0" fill="%23FF7800" />
+<rect width="1" height=".96" x="54" y="0" fill="%23FF7500" />
+<rect width="1" height=".96" x="55" y="0" fill="%23FF7300" />
+<rect width="1" height=".96" x="56" y="0" fill="%23FF7000" />
+<rect width="1" height=".96" x="57" y="0" fill="%23FF6E00" />
+<rect width="1" height=".96" x="58" y="0" fill="%23FF6B00" />
+<rect width="1" height=".96" x="59" y="0" fill="%23FF6900" />
+<rect width="1" height=".96" x="60" y="0" fill="%23FF6600" />
+<rect width="1" height=".96" x="61" y="0" fill="%23FF6300" />
+<rect width="1" height=".96" x="62" y="0" fill="%23FF6100" />
+<rect width="1" height=".96" x="63" y="0" fill="%23FF5E00" />
+<rect width="1" height=".96" x="64" y="0" fill="%23FF5C00" />
+<rect width="1" height=".96" x="65" y="0" fill="%23FF5900" />
+<rect width="1" height=".96" x="66" y="0" fill="%23FF5700" />
+<rect width="1" height=".96" x="67" y="0" fill="%23FF5400" />
+<rect width="1" height=".96" x="68" y="0" fill="%23FF5200" />
+<rect width="1" height=".96" x="69" y="0" fill="%23FF4F00" />
+<rect width="1" height=".96" x="70" y="0" fill="%23FF4D00" />
+<rect width="1" height=".96" x="71" y="0" fill="%23FF4A00" />
+<rect width="1" height=".96" x="72" y="0" fill="%23FF4700" />
+<rect width="1" height=".96" x="73" y="0" fill="%23FF4500" />
+<rect width="1" height=".96" x="74" y="0" fill="%23FF4200" />
+<rect width="1" height=".96" x="75" y="0" fill="%23FF4000" />
+<rect width="1" height=".96" x="76" y="0" fill="%23FF3D00" />
+<rect width="1" height=".96" x="77" y="0" fill="%23FF3B00" />
+<rect width="1" height=".96" x="78" y="0" fill="%23FF3800" />
+<rect width="1" height=".96" x="79" y="0" fill="%23FF3600" />
+<rect width="1" height=".96" x="80" y="0" fill="%23FF3300" />
+<rect width="1" height=".96" x="81" y="0" fill="%23FF3000" />
+<rect width="1" height=".96" x="82" y="0" fill="%23FF2E00" />
+<rect width="1" height=".96" x="83" y="0" fill="%23FF2B00" />
+<rect width="1" height=".96" x="84" y="0" fill="%23FF2900" />
+<rect width="1" height=".96" x="85" y="0" fill="%23FF2600" />
+<rect width="1" height=".96" x="86" y="0" fill="%23FF2400" />
+<rect width="1" height=".96" x="87" y="0" fill="%23FF2100" />
+<rect width="1" height=".96" x="88" y="0" fill="%23FF1F00" />
+<rect width="1" height=".96" x="89" y="0" fill="%23FF1C00" />
+<rect width="1" height=".96" x="90" y="0" fill="%23FF1A00" />
+<rect width="1" height=".96" x="91" y="0" fill="%23FF1700" />
+<rect width="1" height=".96" x="92" y="0" fill="%23FF1400" />
+<rect width="1" height=".96" x="93" y="0" fill="%23FF1200" />
+<rect width="1" height=".96" x="94" y="0" fill="%23FF0F00" />
+<rect width="1" height=".96" x="95" y="0" fill="%23FF0D00" />
+<rect width="1" height=".96" x="96" y="0" fill="%23FF0A00" />
+<rect width="1" height=".96" x="97" y="0" fill="%23FF0800" />
+<rect width="1" height=".96" x="98" y="0" fill="%23FF0500" />
+<rect width="1" height=".96" x="99" y="0" fill="%23FF0300" />
+<rect width="1" height=".96" x="100" y="0" fill="%23FF0000" />
+</svg>'/><img src='data:image/svg+xml;utf-8,<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+     width="180mm" height="25mm"
+     viewBox="0 0 101 1" preserveAspectRatio="none"
+     shape-rendering="crispEdges" stroke="none">
+<rect width="1" height=".96" x="0" y="0" fill="%23FFFF00" />
+<rect width="1" height=".96" x="1" y="0" fill="%23FFFD00" />
+<rect width="1" height=".96" x="2" y="0" fill="%23FFFB00" />
+<rect width="1" height=".96" x="3" y="0" fill="%23FFF900" />
+<rect width="1" height=".96" x="4" y="0" fill="%23FFF600" />
+<rect width="1" height=".96" x="5" y="0" fill="%23FFF400" />
+<rect width="1" height=".96" x="6" y="0" fill="%23FFF200" />
+<rect width="1" height=".96" x="7" y="0" fill="%23FFF000" />
+<rect width="1" height=".96" x="8" y="0" fill="%23FFEE00" />
+<rect width="1" height=".96" x="9" y="0" fill="%23FFEC00" />
+<rect width="1" height=".96" x="10" y="0" fill="%23FFEA00" />
+<rect width="1" height=".96" x="11" y="0" fill="%23FFE800" />
+<rect width="1" height=".96" x="12" y="0" fill="%23FFE600" />
+<rect width="1" height=".96" x="13" y="0" fill="%23FFE400" />
+<rect width="1" height=".96" x="14" y="0" fill="%23FFE200" />
+<rect width="1" height=".96" x="15" y="0" fill="%23FFE000" />
+<rect width="1" height=".96" x="16" y="0" fill="%23FFDE00" />
+<rect width="1" height=".96" x="17" y="0" fill="%23FFDB00" />
+<rect width="1" height=".96" x="18" y="0" fill="%23FFD900" />
+<rect width="1" height=".96" x="19" y="0" fill="%23FFD700" />
+<rect width="1" height=".96" x="20" y="0" fill="%23FFD500" />
+<rect width="1" height=".96" x="21" y="0" fill="%23FFD300" />
+<rect width="1" height=".96" x="22" y="0" fill="%23FFD100" />
+<rect width="1" height=".96" x="23" y="0" fill="%23FFCF00" />
+<rect width="1" height=".96" x="24" y="0" fill="%23FFCD00" />
+<rect width="1" height=".96" x="25" y="0" fill="%23FFCB00" />
+<rect width="1" height=".96" x="26" y="0" fill="%23FFC900" />
+<rect width="1" height=".96" x="27" y="0" fill="%23FFC700" />
+<rect width="1" height=".96" x="28" y="0" fill="%23FFC500" />
+<rect width="1" height=".96" x="29" y="0" fill="%23FFC300" />
+<rect width="1" height=".96" x="30" y="0" fill="%23FFC100" />
+<rect width="1" height=".96" x="31" y="0" fill="%23FFBF00" />
+<rect width="1" height=".96" x="32" y="0" fill="%23FFBD00" />
+<rect width="1" height=".96" x="33" y="0" fill="%23FFBB00" />
+<rect width="1" height=".96" x="34" y="0" fill="%23FFB900" />
+<rect width="1" height=".96" x="35" y="0" fill="%23FFB700" />
+<rect width="1" height=".96" x="36" y="0" fill="%23FFB500" />
+<rect width="1" height=".96" x="37" y="0" fill="%23FFB400" />
+<rect width="1" height=".96" x="38" y="0" fill="%23FFB200" />
+<rect width="1" height=".96" x="39" y="0" fill="%23FFB000" />
+<rect width="1" height=".96" x="40" y="0" fill="%23FFAE00" />
+<rect width="1" height=".96" x="41" y="0" fill="%23FFAC00" />
+<rect width="1" height=".96" x="42" y="0" fill="%23FFAA00" />
+<rect width="1" height=".96" x="43" y="0" fill="%23FFA800" />
+<rect width="1" height=".96" x="44" y="0" fill="%23FFA600" />
+<rect width="1" height=".96" x="45" y="0" fill="%23FFA400" />
+<rect width="1" height=".96" x="46" y="0" fill="%23FFA200" />
+<rect width="1" height=".96" x="47" y="0" fill="%23FFA000" />
+<rect width="1" height=".96" x="48" y="0" fill="%23FF9E00" />
+<rect width="1" height=".96" x="49" y="0" fill="%23FF9C00" />
+<rect width="1" height=".96" x="50" y="0" fill="%23FF9A00" />
+<rect width="1" height=".96" x="51" y="0" fill="%23FF9800" />
+<rect width="1" height=".96" x="52" y="0" fill="%23FF9600" />
+<rect width="1" height=".96" x="53" y="0" fill="%23FF9400" />
+<rect width="1" height=".96" x="54" y="0" fill="%23FF9200" />
+<rect width="1" height=".96" x="55" y="0" fill="%23FF9000" />
+<rect width="1" height=".96" x="56" y="0" fill="%23FF8E00" />
+<rect width="1" height=".96" x="57" y="0" fill="%23FF8C00" />
+<rect width="1" height=".96" x="58" y="0" fill="%23FF8A00" />
+<rect width="1" height=".96" x="59" y="0" fill="%23FF8800" />
+<rect width="1" height=".96" x="60" y="0" fill="%23FF8600" />
+<rect width="1" height=".96" x="61" y="0" fill="%23FF8400" />
+<rect width="1" height=".96" x="62" y="0" fill="%23FF8200" />
+<rect width="1" height=".96" x="63" y="0" fill="%23FF8000" />
+<rect width="1" height=".96" x="64" y="0" fill="%23FF7D00" />
+<rect width="1" height=".96" x="65" y="0" fill="%23FF7B00" />
+<rect width="1" height=".96" x="66" y="0" fill="%23FF7900" />
+<rect width="1" height=".96" x="67" y="0" fill="%23FF7700" />
+<rect width="1" height=".96" x="68" y="0" fill="%23FF7500" />
+<rect width="1" height=".96" x="69" y="0" fill="%23FF7300" />
+<rect width="1" height=".96" x="70" y="0" fill="%23FF7100" />
+<rect width="1" height=".96" x="71" y="0" fill="%23FF6E00" />
+<rect width="1" height=".96" x="72" y="0" fill="%23FF6C00" />
+<rect width="1" height=".96" x="73" y="0" fill="%23FF6A00" />
+<rect width="1" height=".96" x="74" y="0" fill="%23FF6800" />
+<rect width="1" height=".96" x="75" y="0" fill="%23FF6500" />
+<rect width="1" height=".96" x="76" y="0" fill="%23FF6300" />
+<rect width="1" height=".96" x="77" y="0" fill="%23FF6100" />
+<rect width="1" height=".96" x="78" y="0" fill="%23FF5E00" />
+<rect width="1" height=".96" x="79" y="0" fill="%23FF5C00" />
+<rect width="1" height=".96" x="80" y="0" fill="%23FF5900" />
+<rect width="1" height=".96" x="81" y="0" fill="%23FF5700" />
+<rect width="1" height=".96" x="82" y="0" fill="%23FF5400" />
+<rect width="1" height=".96" x="83" y="0" fill="%23FF5200" />
+<rect width="1" height=".96" x="84" y="0" fill="%23FF4F00" />
+<rect width="1" height=".96" x="85" y="0" fill="%23FF4C00" />
+<rect width="1" height=".96" x="86" y="0" fill="%23FF4900" />
+<rect width="1" height=".96" x="87" y="0" fill="%23FF4700" />
+<rect width="1" height=".96" x="88" y="0" fill="%23FF4300" />
+<rect width="1" height=".96" x="89" y="0" fill="%23FF4000" />
+<rect width="1" height=".96" x="90" y="0" fill="%23FF3D00" />
+<rect width="1" height=".96" x="91" y="0" fill="%23FF3A00" />
+<rect width="1" height=".96" x="92" y="0" fill="%23FF3600" />
+<rect width="1" height=".96" x="93" y="0" fill="%23FF3200" />
+<rect width="1" height=".96" x="94" y="0" fill="%23FF2E00" />
+<rect width="1" height=".96" x="95" y="0" fill="%23FF2900" />
+<rect width="1" height=".96" x="96" y="0" fill="%23FF2400" />
+<rect width="1" height=".96" x="97" y="0" fill="%23FF1E00" />
+<rect width="1" height=".96" x="98" y="0" fill="%23FF1700" />
+<rect width="1" height=".96" x="99" y="0" fill="%23FF0E00" />
+<rect width="1" height=".96" x="100" y="0" fill="%23FF0000" />
+</svg>'/><p>You should be able to see the difference between the two images: the original colorscheme (top) uses simple linear interpolation, the modified scheme (below) shows the adjusted scheme, with smoother transitions in the red shades.</p><h1 id="Testing-a-colorscheme-with-sineramp()"><a class="docs-heading-anchor" href="#Testing-a-colorscheme-with-sineramp()">Testing a colorscheme with <code>sineramp()</code></a><a id="Testing-a-colorscheme-with-sineramp()-1"></a><a class="docs-heading-anchor-permalink" href="#Testing-a-colorscheme-with-sineramp()" title="Permalink"></a></h1><p>Ideally, for a colorscheme to be effective, the perceptual contrast along the colors should be constant. Some colorschemes are better than others!</p><p>Try testing your favourite colorscheme on the image generated with <code>sineramp()</code>. This function generates an array where the values consist of a sine wave superimposed on a ramp function. The amplitude of the sine wave is modulated from its full value at the top of the array to 0 at the bottom.</p><p>When a colorscheme is used to render the array as a color image, we&#39;re hoping to see the sine wave uniformly visible across the image from left to right. We also want the contrast level, the distance down the image at which the sine wave remains discernible, to be uniform across the image. At the very bottom of the image, where the sine wave amplitude is 0, we just have a linear ramp which simply reproduces the colors in the colorscheme. Here the underlying data is a featureless ramp, so we should not perceive any identifiable features across the bottom of the image.</p><p>Here&#39;s a comparison between the <code>jet</code> and the <code>rainbow_bgyr_35_85_c72_n256</code> colorschemes:</p><pre><code class="language-julia hljs">scheme = ColorSchemes.jet
+img = Gray.(sineramp(150, 800, amplitude = 12.5, wavelength=8, p=2))
+cimg = zeros(RGB, 150, 800)
+for e in eachindex(img)
+    cimg[e] = get(scheme, img[e])
+end
+cimg</code></pre><img src="c40e1a3a.png" alt="Example block output"/><pre><code class="language-julia hljs">scheme = ColorSchemes.rainbow_bgyr_35_85_c72_n256
+img = Gray.(sineramp(150, 800, amplitude = 12.5, wavelength=8, p=2))
+cimg = zeros(RGB, 150, 800)
+for e in eachindex(img)
+    cimg[e] = get(scheme, img[e])
+end
+cimg</code></pre><img src="bbc37aa9.png" alt="Example block output"/><p>You can hopefully see that the <code>jet</code> image is patchy; the <code>rainbow_bgyr_35_85_c72_n256</code> shows the sinuous rippling consistently.</p><h1 id="Options-for-equalize()"><a class="docs-heading-anchor" href="#Options-for-equalize()">Options for <code>equalize()</code></a><a id="Options-for-equalize()-1"></a><a class="docs-heading-anchor-permalink" href="#Options-for-equalize()" title="Permalink"></a></h1><p>The <code>equalize</code> function&#39;s primary use is for the correction of colorschemes. </p><p>The perceptual contrast is very much dominated by the contrast in colour lightness values along the map. This function attempts to equalise the chosen perceptual contrast measure along a colorscheme by stretching and/or compressing sections of the colorscheme.</p><p>There are limitations to what this function can correct.  When applied to some colorschemes such as <code>jet</code>, <code>hsv</code>, and <code>cool</code>, you might see colour discontinuity artifacts, because these colorschemes have segments that are nearly constant in lightness. </p><p>However, the function can succesfully fix up <code>hot</code>, <code>winter</code>, <code>spring</code> and <code>autumn</code> colorschemes. If you do see colour discontinuities in the resulting colorscheme, try changing W from [1, 0, 0] to [1, 1, 1], or some intermediate weighting of [1, 0.5, 0.5], say.</p><p>The <code>equalize()</code> function takes either a ColorScheme argument or an array of colors. The following keyword arguments are available:</p><ul><li><p><code>colormodel</code> is <code>:RGB</code> or <code>:LAB</code> indicating the type of data (use <code>:RGB</code> unless the ColorScheme contains LAB color definitions)</p></li><li><p><code>formula</code> is &quot;CIE76&quot; or &quot;CIEDE2000&quot;</p></li><li><p><code>W</code> is 3-vector of weights to be applied to the lightness, chroma and hue components of the difference equation</p></li><li><p><code>sigma</code> is an optional Gaussian smoothing parameter</p></li><li><p><code>cyclic</code> is a Boolean flag indicating whether the colormap is cyclic. This affects how smoothing is applied at the end points.</p></li></ul><h2 id="Formulae"><a class="docs-heading-anchor" href="#Formulae">Formulae</a><a id="Formulae-1"></a><a class="docs-heading-anchor-permalink" href="#Formulae" title="Permalink"></a></h2><p>The CIE76 and CIEDE2000 colour difference formulae were developed for much lower spatial frequencies than we are typically interested in. Neither is ideal for our application. The main thing to note is that at <em>fine</em> spatial frequencies perceptual contrast is dominated by <em>lightness</em> difference, chroma and hue are relatively unimportant.</p><p>Neither CIE76 or CIEDE2000 difference measures are ideal for the high spatial frequencies that we are interested in.  Empirically I find that CIEDE2000 seems to give slightly better results on colormaps where there is a significant lightness gradient (this applies to most colormaps). In this case you would be using a weighting vector W = [1, 0, 0].  For isoluminant, or low lightness gradient colormaps where one is using a weighting vector W = [1, 1, 1] CIE76 should be used as the CIEDE2000 chroma correction is inapropriate for the spatial frequencies we are interested in.</p><h1 id="The-Weighting-vector-W"><a class="docs-heading-anchor" href="#The-Weighting-vector-W">The Weighting vector W</a><a id="The-Weighting-vector-W-1"></a><a class="docs-heading-anchor-permalink" href="#The-Weighting-vector-W" title="Permalink"></a></h1><p>The CIEDE2000 colour difference formula incorporates the scaling parameters kL, kC, kH in the demonimator of the lightness, chroma, and hue difference components respectively. The 3 components of W correspond to the reciprocal of these 3 parameters. (I do not know why they chose to put kL, kC, kH in the denominator. If you wanted to ignore, say, the chroma component you would have to set kC to Inf, rather than setting W[2] to 0 which seems more sensible to me). If you are using CIE76 then W[2] amd W[3] are applied to the differences in a and b.  In this case you should ensure W[2] = W[3].  </p><p>In general, for the spatial frequencies of interest to us, lightness differences are overwhelmingly more important than chroma or hue and W should be set to [1, 0, 0]</p><p>For colormaps with a significant range of lightness, use:</p><ul><li><p>formula = &quot;CIE76&quot; or &quot;CIEDE2000&quot;</p></li><li><p>W = [1, 0, 0] Only correct for lightness</p></li><li><p>sigma = 5 - 7</p></li></ul><p>For isoluminant or low lightness gradient colormaps use:</p><ul><li><p>formula = &quot;CIE76&quot;</p></li><li><p>W = [1, 1, 1]  Correct for colour and lightness</p></li></ul><ul><li>sigma = 5 - 7</li></ul><h1 id="Smoothing-parameter-sigma"><a class="docs-heading-anchor" href="#Smoothing-parameter-sigma">Smoothing parameter sigma</a><a id="Smoothing-parameter-sigma-1"></a><a class="docs-heading-anchor-permalink" href="#Smoothing-parameter-sigma" title="Permalink"></a></h1><p>The output will have lightness values of constant slope magnitude. However, it is possible that the sign of the slope may change, for example at the midpoint of a bilateral colorscheme.  This slope discontinuity of lightness can induce a false apparent feature in the colorscheme.  A smaller effect is also occurs for slope discontinuities in a and b.  For such colorschemes it can be useful to introduce a small amount of _smoothing of the Lab values to soften the transition of sign in the slope to remove this apparent feature.  However in doing this one creates a small region of suppressed luminance contrast in the colorscheme which induces a &#39;blind spot&#39; that compromises the visibility of features should they fall in that data range.  ccordingly the smoothing should be kept to a minimum. A value of sigma in the range 5 to 7 in a 256 element colorscheme seems about right.  As a guideline sigma should not be more than about 1/25 of the number of entries in the colormap, preferably less.</p><p>Reference: Peter Kovesi. Good ColorMaps: How to Design Them. <a href="https://arXiv:1509.03700">arXiv:1509.03700 [cs.GR] 2015</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../output/">« Saving colorschemes</a><a class="docs-footer-nextpage" href="../functionindex/">Alphabetical function list »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Monday 15 April 2024 17:47">Monday 15 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
